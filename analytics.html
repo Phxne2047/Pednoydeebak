@@ -6,9 +6,228 @@
   <title>KitchenPulse AI - การวิเคราะห์</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet" />
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{background:'#131316',surface:'#1f1f22',elevated:'#27272a',high:'#2a2a2d',stroke:'#3f3f46',muted:'#e0c0b1',ink:'#e4e1e6',primary:'#f97316',primaryText:'#ffb690',warning:'#f59e0b',success:'#10b981',danger:'#ef4444'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']}}}};</script>
-  <style>*{box-sizing:border-box}.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#131316',
+            surface: '#1f1f22',
+            elevated: '#27272a',
+            high: '#2a2a2d',
+            stroke: '#3f3f46',
+            muted: '#e0c0b1',
+            ink: '#e4e1e6',
+            primary: '#f97316',
+            primaryText: '#ffb690',
+            warning: '#f59e0b',
+            success: '#10b981',
+            danger: '#ef4444'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  </style>
 </head>
 <body class="bg-background text-ink font-sans">
-  <header class="sticky top-0 z-40 border-b border-stroke bg-background/95 backdrop-blur"><div class="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6"><a href="index.html" class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl text-primary">restaurant</span><div><h1 class="font-mono text-lg font-bold text-primaryText">KitchenPulse AI</h1><p class="hidden font-mono text-[10px] uppercase tracking-widest text-muted sm:block">Smart kitchen operating system</p></div></a><nav class="hidden items-center gap-1 lg:flex"><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="index.html">กระดานครัวสด</a><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="optimizer.html">เพิ่มประสิทธิภาพ</a><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="qc.html">AI QC ประตูตรวจ</a><a class="rounded-lg bg-primary/20 px-3 py-2 text-sm font-semibold text-primaryText" href="analytics.html">การวิเคราะห์</a></nav><div class="flex items-center gap-2"><span class="hidden rounded-full border border-success/40 bg-success/10 px-3 py-1 font-mono text-xs text-success sm:inline-flex">● ระบบปกติ</span><button class="rounded-lg border border-stroke px-3 py-2 text-muted lg:hidden" id="menuButton"><span class="material-symbols-outlined">menu</span></button></div></div><nav class="hidden border-t border-stroke bg-surface p-3 lg:hidden" id="mobileNav"><div class="grid grid-cols-2 gap-2"><a class="rounded-lg p-2 text-sm text-muted" href="index.html">หน้าแรก</a><a class="rounded-lg p-2 text-sm text-muted" href="index.html">กระดานครัวสด</a><a class="rounded-lg p-2 text-sm text-muted" href="optimizer.html">เพิ่มประสิทธิภาพ</a><a class="rounded-lg p-2 text-sm text-muted" href="qc.html">AI QC</a><a class="rounded-lg bg-primary/20 p-2 text-sm text-primaryText" href="analytics.html">การวิเคราะห์</a></div></nav></header>
-  <main class="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6"><div class="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p class="font-mono text-xs uppercase tracking-widest text-primaryText">Business impact</p><h2 class="mt-2 text-3xl font-bold">วิเคราะห์ข้อมูลรายวันและผลกระทบ</h2><p class="mt-1 text-muted">ตัวชี้วัดประสิทธิภาพแบบเรียลไทม์และการเพิ่มประสิทธิภาพด้วย AI</p></div><button class="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white" id="exportButton">ดาวน์โหลดรายงาน</button></div><div class="grid gap-4 md:grid-cols-3"><div class="rounded-xl border border-stroke bg-elevated p-5"><p class="text-sm text-muted">เวลาเตรียมอาหารเฉลี่ย</p><p class="mt-2 text-4xl font-bold">11.5<span class="text-lg text-muted">m</span></p><span class="mt-3 inline-flex rounded bg-success/20 px-2 py-1 font-mono text-xs text-success">เร็วขึ้น 28%</span></div><div class="rounded-xl border border-stroke bg-elevated p-5"><p class="text-sm text-muted">อัตราออเดอร์ผิดพลาด</p><p class="mt-2 text-4xl font-bold">0<span class="text-lg text-muted">%</span></p><span class="mt-3 inline-flex rounded bg-success/20 px-2 py-1 font-mono text-xs text-success">450 ออเดอร์ล่าสุด</span></div><div class="rounded-xl border border-stroke bg-elevated p-5"><p class="text-sm text-muted">ประหยัดต้นทุนสะสม</p><p class="mt-2 text-4xl font-bold text-primaryText">฿4,500</p><div class="mt-4 h-2 rounded-full bg-stroke"><div class="h-full w-[85%] rounded-full bg-primary"></div></div><p class="mt-2 text-right font-mono text-xs text-muted">85% ของเป้าหมาย</p></div></div><div class="grid gap-4 lg:grid-cols-3"><div class="rounded-xl border border-stroke bg-elevated p-5 lg:col-span-2"><h3 class="text-xl font-bold">ความเร็วในการทำอาหารเปรียบเทียบก่อน-หลัง</h3><p class="mt-1 text-sm text-muted">เวลาเตรียมอาหารในช่วง 12 ชั่วโมงที่ผ่านมา</p><div class="relative mt-6 h-64 overflow-hidden rounded-lg border border-stroke bg-surface p-4"><div class="absolute inset-0 opacity-40" style="background-image:linear-gradient(#3f3f46 1px,transparent 1px),linear-gradient(90deg,#3f3f46 1px,transparent 1px);background-size:20% 25%"></div><svg class="relative h-full w-full" viewBox="0 0 600 220" preserveAspectRatio="none"><polyline points="0,55 80,72 160,45 240,92 320,75 400,112 480,90 600,130" fill="none" stroke="#71717a" stroke-width="4" stroke-dasharray="8 8"/><polyline points="0,155 80,135 160,142 240,120 320,128 400,98 480,105 600,78" fill="none" stroke="#f97316" stroke-width="5"/></svg></div></div><div class="rounded-xl border border-stroke bg-elevated p-5"><h3 class="text-xl font-bold">ข้อผิดพลาดที่ AI บล็อก</h3><div class="mx-auto mt-8 grid h-40 w-40 place-items-center rounded-full" style="background:conic-gradient(#f97316 0 45%,#ef4444 45% 70%,#f59e0b 70% 88%,#10b981 88% 100%)"><div class="grid h-24 w-24 place-items-center rounded-full bg-elevated text-center"><b class="text-2xl">14</b><small class="text-muted">รายการ</small></div></div><div class="mt-6 space-y-2 text-sm"><p><span class="mr-2 inline-block h-2 w-2 rounded-full bg-primary"></span>ไม่ใส่เผ็ด 45%</p><p><span class="mr-2 inline-block h-2 w-2 rounded-full bg-danger"></span>แพ้ถั่ว 25%</p><p><span class="mr-2 inline-block h-2 w-2 rounded-full bg-warning"></span>ไม่ใส่ผักชี 18%</p></div></div></div></main><div class="fixed bottom-5 left-1/2 hidden -translate-x-1/2 rounded-lg border border-success/40 bg-elevated px-4 py-3 text-sm text-success shadow-xl" id="toast"></div><script>document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('mobileNav').classList.toggle('hidden'));document.getElementById('exportButton').addEventListener('click',()=>{const t=document.getElementById('toast');t.textContent='สร้างรายงานพร้อมดาวน์โหลดแล้ว';t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2600)});</script></body></html>
+  <header class="sticky top-0 z-40 border-b border-stroke bg-background/95 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6">
+      <a href="index.html" class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-3xl text-primary">restaurant</span>
+        <div>
+          <h1 class="font-mono text-lg font-bold text-primaryText">KitchenPulse AI</h1>
+          <p class="hidden font-mono text-[10px] uppercase tracking-widest text-muted sm:block">Smart kitchen operating system</p>
+        </div>
+      </a>
+      <nav class="hidden items-center gap-1 lg:flex">
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="index.html">กระดานครัวสด</a>
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="qc.html">AI QC ประตูตรวจ</a>
+        <a class="rounded-lg bg-primary/20 px-3 py-2 text-sm font-semibold text-primaryText" href="analytics.html">การวิเคราะห์</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <span id="apiStatus" class="hidden rounded-full border border-warning/40 bg-warning/10 px-3 py-1 font-mono text-xs text-warning sm:inline-flex">● กำลังเชื่อมต่อ AI</span>
+        <button class="rounded-lg border border-stroke px-3 py-2 text-muted lg:hidden" id="menuButton"><span class="material-symbols-outlined">menu</span></button>
+      </div>
+    </div>
+    <nav class="hidden border-t border-stroke bg-surface p-3 lg:hidden" id="mobileNav">
+      <div class="grid grid-cols-2 gap-2">
+        <a class="rounded-lg p-2 text-sm text-muted" href="index.html">กระดานครัวสด</a>
+        <a class="rounded-lg p-2 text-sm text-muted" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
+        <a class="rounded-lg p-2 text-sm text-muted" href="qc.html">AI QC</a>
+        <a class="rounded-lg bg-primary/20 p-2 text-sm text-primaryText" href="analytics.html">การวิเคราะห์</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6">
+    <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-widest text-primaryText">Business impact · Luna AI</p>
+        <h2 class="mt-2 text-3xl font-bold">วิเคราะห์ข้อมูลรายวันและผลกระทบ</h2>
+        <p class="mt-1 text-muted">ให้ Luna AI วิเคราะห์ประสิทธิภาพครัวจากข้อมูล KitchenPulse</p>
+      </div>
+      <button class="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:brightness-110" id="analyzeButton">
+        <span class="material-symbols-outlined text-base">auto_awesome</span>
+        วิเคราะห์ด้วย Luna AI
+      </button>
+    </div>
+
+    <div class="rounded-xl border border-primary/40 bg-primary/10 p-4">
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-2xl text-primary">smart_toy</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-col justify-between gap-2 sm:flex-row">
+            <h3 class="font-bold text-primaryText">Luna AI Insight</h3>
+            <span id="analysisTime" class="font-mono text-xs text-muted">ยังไม่มีการวิเคราะห์</span>
+          </div>
+          <p id="insightText" class="mt-2 text-sm leading-6 text-muted">กดปุ่ม “วิเคราะห์ด้วย Luna AI” เพื่อให้ AI สรุปแนวโน้ม คอขวด คุณภาพ และข้อเสนอแนะจากข้อมูลปัจจุบัน</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-3">
+      <div class="rounded-xl border border-stroke bg-elevated p-5"><p class="text-sm text-muted">เวลาเตรียมอาหารเฉลี่ย</p><p id="avgTime" class="mt-2 text-4xl font-bold">11.5<span class="text-lg text-muted">m</span></p><span class="mt-3 inline-flex rounded bg-success/20 px-2 py-1 font-mono text-xs text-success">เร็วขึ้น 28%</span></div>
+      <div class="rounded-xl border border-stroke bg-elevated p-5"><p class="text-sm text-muted">อัตราออเดอร์ผิดพลาด</p><p id="errorRate" class="mt-2 text-4xl font-bold">0<span class="text-lg text-muted">%</span></p><span class="mt-3 inline-flex rounded bg-success/20 px-2 py-1 font-mono text-xs text-success">450 ออเดอร์ล่าสุด</span></div>
+      <div class="rounded-xl border border-stroke bg-elevated p-5"><p class="text-sm text-muted">ประหยัดต้นทุนสะสม</p><p id="savedCost" class="mt-2 text-4xl font-bold text-primaryText">฿4,500</p><div class="mt-4 h-2 rounded-full bg-stroke"><div class="h-full w-[85%] rounded-full bg-primary"></div></div><p class="mt-2 text-right font-mono text-xs text-muted">85% ของเป้าหมาย</p></div>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-3">
+      <div class="rounded-xl border border-stroke bg-elevated p-5 lg:col-span-2">
+        <div class="flex flex-col justify-between gap-2 sm:flex-row"><div><h3 class="text-xl font-bold">ความเร็วในการทำอาหารเปรียบเทียบก่อน-หลัง</h3><p class="mt-1 text-sm text-muted">เวลาเตรียมอาหารในช่วง 12 ชั่วโมงที่ผ่านมา</p></div><span class="font-mono text-xs text-primaryText">● KitchenPulse data</span></div>
+        <div class="relative mt-6 h-64 overflow-hidden rounded-lg border border-stroke bg-surface p-4"><div class="absolute inset-0 opacity-40" style="background-image:linear-gradient(#3f3f46 1px,transparent 1px),linear-gradient(90deg,#3f3f46 1px,transparent 1px);background-size:20% 25%"></div><svg class="relative h-full w-full" viewBox="0 0 600 220" preserveAspectRatio="none"><polyline points="0,55 80,72 160,45 240,92 320,75 400,112 480,90 600,130" fill="none" stroke="#71717a" stroke-width="4" stroke-dasharray="8 8"/><polyline points="0,155 80,135 160,142 240,120 320,128 400,98 480,105 600,78" fill="none" stroke="#f97316" stroke-width="5"/></svg></div>
+        <div class="mt-3 flex gap-5 text-xs text-muted"><span><i class="mr-1 inline-block h-2 w-2 rounded-full bg-stroke"></i>ก่อนใช้ AI</span><span><i class="mr-1 inline-block h-2 w-2 rounded-full bg-primary"></i>หลังใช้ AI</span></div>
+      </div>
+      <div class="rounded-xl border border-stroke bg-elevated p-5"><h3 class="text-xl font-bold">ข้อผิดพลาดที่ AI บล็อก</h3><div class="mx-auto mt-8 grid h-40 w-40 place-items-center rounded-full" style="background:conic-gradient(#f97316 0 45%,#ef4444 45% 70%,#f59e0b 70% 88%,#10b981 88% 100%)"><div class="grid h-24 w-24 place-items-center rounded-full bg-elevated text-center"><b id="blockedCount" class="text-2xl">14</b><small class="text-muted">รายการ</small></div></div><div class="mt-6 space-y-2 text-sm"><p><span class="mr-2 inline-block h-2 w-2 rounded-full bg-primary"></span>ไม่ใส่เผ็ด 45%</p><p><span class="mr-2 inline-block h-2 w-2 rounded-full bg-danger"></span>แพ้ถั่ว 25%</p><p><span class="mr-2 inline-block h-2 w-2 rounded-full bg-warning"></span>ไม่ใส่ผักชี 18%</p></div></div>
+    </div>
+
+    <div class="rounded-xl border border-stroke bg-elevated p-5">
+      <div class="flex flex-col justify-between gap-3 md:flex-row md:items-center"><div><h3 class="text-xl font-bold">รายละเอียดการวิเคราะห์จาก Luna AI</h3><p class="mt-1 text-sm text-muted">สรุปจากเวลาเตรียมอาหาร, สถานีครัว, QC และออเดอร์ที่ถูกบล็อก</p></div><span class="rounded bg-high px-2 py-1 font-mono text-xs text-muted">Model: Luna</span></div>
+      <div id="analysisResult" class="mt-5 grid gap-3 md:grid-cols-3"><div class="rounded-lg border border-stroke bg-surface p-4"><p class="font-mono text-xs text-primaryText">แนวโน้ม</p><p class="mt-2 text-sm text-muted">รอการวิเคราะห์จาก Luna AI</p></div><div class="rounded-lg border border-stroke bg-surface p-4"><p class="font-mono text-xs text-primaryText">จุดที่ควรแก้ไข</p><p class="mt-2 text-sm text-muted">รอข้อมูลเชิงลึก</p></div><div class="rounded-lg border border-stroke bg-surface p-4"><p class="font-mono text-xs text-primaryText">ข้อเสนอแนะ</p><p class="mt-2 text-sm text-muted">รอคำแนะนำจาก AI</p></div></div>
+    </div>
+  </main>
+
+  <div class="fixed bottom-5 left-1/2 hidden -translate-x-1/2 rounded-lg border border-success/40 bg-elevated px-4 py-3 text-sm text-success shadow-xl" id="toast"></div>
+
+  <script>
+    const BASE_URL = "https://itmsuhackathon.askme.co.th";
+    const LOGIN_EMAIL = "67011212047@msu.ac.th";
+    const LOGIN_PASSWORD = "Phone@1324";
+    const LUNA_MODEL = "gpt-5.6-luna";
+    let accessToken = "";
+    let sessionId = "";
+
+    const apiStatus = document.getElementById("apiStatus");
+    const analyzeButton = document.getElementById("analyzeButton");
+    const insightText = document.getElementById("insightText");
+    const analysisTime = document.getElementById("analysisTime");
+    const analysisResult = document.getElementById("analysisResult");
+
+    function showToast(message, success = true) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.className = `fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-lg border px-4 py-3 text-sm shadow-xl ${success ? "border-success/40 bg-elevated text-success" : "border-danger/40 bg-elevated text-danger"}`;
+      setTimeout(() => toast.classList.add("hidden"), 2800);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
+    }
+
+    function getErrorMessage(data, fallback) {
+      if (data?.error && typeof data.error === "object") return data.error.message || data.error.code || fallback;
+      return data?.message || (typeof data?.error === "string" ? data.error : fallback);
+    }
+
+    async function readResponse(response) {
+      const text = await response.text();
+      if (!text) return {};
+      try { return JSON.parse(text); } catch { return { message: text.slice(0, 500) }; }
+    }
+
+    async function login() {
+      const response = await fetch(`${BASE_URL}/api/v1/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: LOGIN_EMAIL, password: LOGIN_PASSWORD }) });
+      const data = await readResponse(response);
+      if (!response.ok) throw new Error(getErrorMessage(data, `Login failed (${response.status})`));
+      if (data.mfa_required) throw new Error("บัญชีนี้ต้องยืนยัน MFA ก่อนใช้งาน");
+      accessToken = data.access_token || data.token || data.data?.access_token;
+      if (!accessToken) throw new Error("ไม่พบ access token");
+      apiStatus.textContent = "● เชื่อมต่อ Luna AI แล้ว";
+      apiStatus.className = "hidden rounded-full border border-success/40 bg-success/10 px-3 py-1 font-mono text-xs text-success sm:inline-flex";
+    }
+
+    function buildPrompt() {
+      return `คุณคือ Luna AI นักวิเคราะห์ระบบปฏิบัติการครัว KitchenPulse AI กรุณาวิเคราะห์ข้อมูลจำลองต่อไปนี้และตอบเป็นภาษาไทย โดยสรุปเป็น JSON เท่านั้น:
+      {
+        "summary": "สรุปภาพรวม 1-2 ประโยค",
+        "trend": "แนวโน้มประสิทธิภาพ",
+        "bottleneck": "จุดคอขวดหรือปัญหาหลัก",
+        "recommendation": "ข้อเสนอแนะที่ทำได้จริง",
+        "impact": "ผลกระทบทางธุรกิจ"
+      }
+      ข้อมูล: เวลาเตรียมอาหารเฉลี่ย 11.5 นาที ลดลง 28%; อัตราออเดอร์ผิดพลาด 0% จาก 450 ออเดอร์; ประหยัดต้นทุนสะสม 4,500 บาท; AI บล็อกข้อผิดพลาด 14 รายการ; หมวดข้อผิดพลาดคือไม่ใส่เผ็ด 45%, แพ้ถั่ว 25%, ไม่ใส่ผักชี 18%; สถานีผัดเป็นสถานีที่มีภาระสูงสุด; เป้าหมายคือเพิ่มความเร็ว ลดอาหารทำซ้ำ และรักษาความถูกต้องของคำขอพิเศษ`;
+    }
+
+    function renderAnalysis(data) {
+      let parsed = data;
+      if (typeof parsed === "string") { try { parsed = JSON.parse(parsed); } catch { parsed = { summary: parsed }; } }
+      const summary = parsed.summary || parsed.content || parsed.text || "Luna AI วิเคราะห์ข้อมูลสำเร็จ";
+      insightText.textContent = summary;
+      analysisTime.textContent = `วิเคราะห์เมื่อ ${new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}`;
+      analysisResult.innerHTML = [
+        ["แนวโน้ม", parsed.trend || "ประสิทธิภาพดีขึ้นหลังปรับคิวด้วย AI"],
+        ["จุดที่ควรแก้ไข", parsed.bottleneck || "ควรเฝ้าระวังภาระงานสถานีผัดในช่วงเร่งด่วน"],
+        ["ข้อเสนอแนะ", parsed.recommendation || "จัดกลุ่มออเดอร์วัตถุดิบเดียวกันและตรวจ QC ก่อนเสิร์ฟทุกจาน"],
+        ["ผลกระทบธุรกิจ", parsed.impact || "ลดเวลารอ ลดการทำอาหารซ้ำ และเพิ่มความเชื่อมั่นของลูกค้า"]
+      ].map(([title, value]) => `<div class="rounded-lg border border-stroke bg-surface p-4"><p class="font-mono text-xs text-primaryText">${escapeHtml(title)}</p><p class="mt-2 text-sm leading-6 text-muted">${escapeHtml(value)}</p></div>`).join("");
+    }
+
+    async function analyzeWithLuna() {
+      analyzeButton.disabled = true;
+      analyzeButton.innerHTML = '<span class="material-symbols-outlined animate-spin text-base">progress_activity</span>กำลังวิเคราะห์...';
+      insightText.textContent = "Luna AI กำลังวิเคราะห์ข้อมูลการทำงานของครัว...";
+      try {
+        if (!accessToken) await login();
+        const response = await fetch(`${BASE_URL}/api/v1/chat-api/chat/completions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}` },
+          body: JSON.stringify({ model: LUNA_MODEL, stream: true, max_tokens: 900, temperature: 0.3, ...(sessionId ? { session_id: sessionId } : {}), messages: [{ role: "system", content: "คุณเป็นนักวิเคราะห์ข้อมูลร้านอาหาร ตอบเป็น JSON เท่านั้น" }, { role: "user", content: buildPrompt() }] })
+        });
+        const responseSessionId = response.headers.get("X-Session-Id");
+        if (!response.ok) { const error = await readResponse(response); throw new Error(getErrorMessage(error, `วิเคราะห์ไม่สำเร็จ (${response.status})`)); }
+        const body = await response.text();
+        let content = "";
+        body.split(/\r?\n/).forEach(line => {
+          if (!line.startsWith("data:")) return;
+          const value = line.slice(5).trim();
+          if (value === "[DONE]") return;
+          try { const chunk = JSON.parse(value); content += chunk.choices?.[0]?.delta?.content || chunk.choices?.[0]?.message?.content || ""; } catch { /* ignore keep-alive lines */ }
+        });
+        sessionId = responseSessionId || sessionId;
+        if (!content) throw new Error("Luna AI ไม่ส่งผลลัพธ์กลับมา");
+        renderAnalysis(content);
+        showToast("Luna AI วิเคราะห์ข้อมูลเรียบร้อยแล้ว");
+      } catch (error) {
+        insightText.textContent = error.message;
+        showToast(error.message, false);
+      } finally {
+        analyzeButton.disabled = false;
+        analyzeButton.innerHTML = '<span class="material-symbols-outlined text-base">auto_awesome</span>วิเคราะห์ด้วย Luna AI';
+      }
+    }
+
+    document.getElementById("menuButton").addEventListener("click", () => document.getElementById("mobileNav").classList.toggle("hidden"));
+    document.getElementById("analyzeButton").addEventListener("click", analyzeWithLuna);
+    document.getElementById("exportButton")?.addEventListener("click", () => showToast("สร้างรายงานพร้อมดาวน์โหลดแล้ว"));
+  </script>
+</body>
+</html>
