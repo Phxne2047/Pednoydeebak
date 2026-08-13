@@ -60,6 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('newOrderButton')?.addEventListener('click', () => showToast('ฟอร์มสร้างออเดอร์พร้อมใช้งานในเวอร์ชันถัดไป'));
   document.addEventListener('click', event => {
     const qc = event.target.closest('.qc-action');
-    if (qc) { showToast(`เปิดการตรวจสอบ ${qc.dataset.table}`); }
+    if (qc) {
+      const target = encodeURIComponent(qc.dataset.table || 'โต๊ะ 3');
+      window.location.href = `qc.html?table=${target}`;
+    }
   });
 });
