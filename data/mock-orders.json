@@ -73,25 +73,6 @@
       "cookTimeMinutes": 9,
       "specialRequest": "เผ็ดกลาง เพิ่มข้าวคั่ว",
       "status": "done"
-    },
-    {
-      "id": "MSU-1009",
-      "customer": "โต๊ะ 6",
-      "menu": "ลาบหมูคั่ว",
-      "category": "ยำ",
-      "cookTimeMinutes": 9,
-      "specialRequest": "เผ็ดกลาง เพิ่มข้าวคั่ว",
-      "status": "cooking"
-    }
-    ,
-    {
-      "id": "MSU-1010",
-      "customer": "โต๊ะ 4",
-      "menu": "ปีกไก่ทอดน้ำปลา",
-      "category": "ทอด",
-      "cookTimeMinutes": 11,
-      "specialRequest": "กรอบกรอบมาก",
-      "status": "cooking"
     }
   ]
 }
