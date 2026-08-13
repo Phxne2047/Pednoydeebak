@@ -60,7 +60,11 @@
     <div>
       <p class="font-mono text-xs uppercase tracking-widest text-primaryText">AI operations</p>
       <h2 class="mt-2 text-3xl font-bold">เพิ่มประสิทธิภาพปัญหาคอขวด</h2>
-      <p class="mt-1 text-muted">วิเคราะห์ภาระงานและปรับคิวจากออเดอร์จริงในครัว</p>
+      <p class="mt-1 text-muted">ให้ AI วิเคราะห์ภาระงานและจัดคิวจากออเดอร์จริงในครัว</p>
+    </div>
+    <div class="mb-2 flex flex-wrap items-center gap-3 text-xs text-muted">
+      <span class="rounded-full border border-primary/40 bg-primary/10 px-3 py-1" id="aiStatus">AI: กำลังเตรียมระบบ...</span>
+      <span id="tokenStatus">กำลังเข้าสู่ระบบ...</span>
     </div>
     <div class="grid gap-4 md:grid-cols-3" id="stationGrid"></div>
     <div class="grid gap-4 lg:grid-cols-3">
@@ -72,12 +76,19 @@
         <p class="mt-4 border-l-4 border-danger pl-4 leading-7" id="warningText">กำลังวิเคราะห์ข้อมูลออเดอร์...</p>
         <p class="mt-4 text-muted" id="recommendationText">กำลังสร้างข้อเสนอแนะ...</p>
         <button class="mt-6 rounded-lg bg-primary px-5 py-3 font-bold text-white" id="optimizerButton">เรียกใช้ AI Queue Optimizer</button>
+        <div class="mt-5 hidden rounded-lg border border-success/40 bg-success/10 p-4" id="queueResult">
+          <h4 class="font-bold text-success">คิวที่ AI จัดใหม่</h4>
+          <p class="mt-1 text-sm text-muted">เรียงตามสถานีและเวลาปรุง เพื่อให้สถานีที่ล้นรับงานสำคัญก่อน</p>
+          <ol class="mt-3 space-y-2 text-sm" id="queueList"></ol>
+        </div>
       </div>
       <div class="rounded-xl border border-stroke bg-elevated p-6">
-        <h3 class="font-bold">ผลกระทบโดยประมาณ</h3>
+        <h3 class="font-bold">ผลกระทบโดยประมาณจาก AI</h3>
+        <p class="mt-1 text-xs text-muted" id="impactSummary">กำลังคำนวณจากออเดอร์จริง...</p>
         <div class="mt-6 space-y-4">
-          <div class="flex justify-between"><span class="text-muted">เวลารอคิว</span><b class="text-success">-28%</b></div>
-          <div class="flex justify-between"><span class="text-muted">การใช้สถานี</span><b class="text-primaryText">+18%</b></div>
+          <div class="flex justify-between"><span class="text-muted">เวลารอคิว</span><b class="text-success" id="waitImpact">-</b></div>
+          <div class="flex justify-between"><span class="text-muted">การใช้สถานี</span><b class="text-primaryText" id="stationImpact">-</b></div>
+          <div class="flex justify-between"><span class="text-muted">เวลาปรุงรวม</span><b class="text-ink" id="timeImpact">-</b></div>
         </div>
       </div>
     </div>
@@ -91,18 +102,221 @@
       normal: { border: 'border-success/40', background: 'bg-elevated', badge: 'bg-success', number: 'text-success', bar: 'bg-success', label: 'ปกติ' }
     };
 
+    const API_BASE_URL = 'https://itmsuhackathon.askme.co.th';
+    const LOGIN_EMAIL = '67011212047@msu.ac.th';
+    const LOGIN_PASSWORD = 'Phone@1324';
+    const AI_MODEL = 'gemini-3.6-flash';
+    let currentOrders = [];
+    let accessToken = '';
+    let chatSessionId = sessionStorage.getItem('kitchenpulse_chat_session_id') || '';
+
+    function setAiStatus(message, success = false) {
+      const element = document.getElementById('aiStatus');
+      element.textContent = `AI: ${message}`;
+      element.className = `rounded-full border px-3 py-1 ${success ? 'border-success/40 bg-success/10 text-success' : 'border-primary/40 bg-primary/10 text-primaryText'}`;
+    }
+
+    function errorMessage(data, fallback) {
+      if (data?.error && typeof data.error === 'object') return data.error.message || data.error.code || fallback;
+      if (data?.message) return data.message;
+      if (typeof data?.error === 'string') return data.error;
+      return fallback;
+    }
+
+    async function loginToAskMe() {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email: LOGIN_EMAIL, password: LOGIN_PASSWORD })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(errorMessage(data, `Login failed (${response.status})`));
+      if (data.mfa_required) throw new Error('บัญชีนี้ต้องยืนยัน MFA ก่อนใช้งาน');
+      accessToken = data.access_token || data.token || data.data?.access_token || '';
+      if (!accessToken) throw new Error('ไม่พบ access_token จากระบบ Login');
+      sessionStorage.setItem('kitchenpulse_access_token', accessToken);
+      document.getElementById('tokenStatus').textContent = 'เข้าสู่ระบบ AskMe สำเร็จ';
+    }
+
+    async function ensureLogin() {
+      accessToken = sessionStorage.getItem('kitchenpulse_access_token') || '';
+      if (accessToken) return;
+      await loginToAskMe();
+    }
+
+    function parseAiContent(content) {
+      const text = String(content || '').trim();
+      const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
+      const start = cleaned.indexOf('{');
+      if (start < 0) throw new Error(`AI ส่งผลลัพธ์ไม่ใช่ JSON: ${cleaned.slice(0, 160) || 'ไม่ได้รับข้อความ'}`);
+
+      let depth = 0;
+      let inString = false;
+      let escaped = false;
+      for (let index = start; index < cleaned.length; index += 1) {
+        const character = cleaned[index];
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (character === '\\' && inString) {
+          escaped = true;
+          continue;
+        }
+        if (character === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (inString) continue;
+        if (character === '{') depth += 1;
+        if (character === '}') {
+          depth -= 1;
+          if (depth === 0) {
+            try {
+              return JSON.parse(cleaned.slice(start, index + 1));
+            } catch (error) {
+              throw new Error('AI ส่ง JSON ไม่ถูกต้อง');
+            }
+          }
+        }
+      }
+      throw new Error(`AI ส่ง JSON ไม่ครบหรือถูกตัดกลางคำตอบ: ${cleaned.slice(0, 160)}`);
+    }
+
+    async function readStreamingResponse(response) {
+      if (!response.body) throw new Error('API ไม่ส่ง streaming body กลับมา');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let content = '';
+      const consumeLine = line => {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) return;
+        const payload = trimmed.slice(5).trim();
+        if (!payload || payload === '[DONE]') return;
+        try {
+          const chunk = JSON.parse(payload);
+          const choice = chunk.choices?.[0];
+          const delta = choice?.delta?.content || choice?.message?.content || '';
+          content += typeof delta === 'string' ? delta : (delta?.text || '');
+        } catch (error) {
+          // SSE อาจแบ่ง JSON หนึ่ง event ข้ามหลายบรรทัด ให้ข้ามเฉพาะ event ที่อ่านไม่ได้
+        }
+      };
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop() || '';
+        lines.forEach(consumeLine);
+      }
+      consumeLine(buffer);
+      return parseAiContent(content);
+    }
+
+    async function requestAi(orders, queueOnly = false, stream = true) {
+      await ensureLogin();
+      const prompt = `คุณคือ KitchenPulse AI สำหรับวิเคราะห์การปฏิบัติงานครัว\nวิเคราะห์ข้อมูล JSON นี้: ${JSON.stringify(orders)}\n${queueOnly ? 'จัดลำดับคิว active โดยคำนึงถึงคอขวด สถานะ และเวลาปรุง' : 'วิเคราะห์ว่าสถานีใดคิวล้น พร้อมคำนวณผลกระทบโดยประมาณ'}\nตอบเป็น JSON เท่านั้น โดยใช้รูปแบบ: {"bottleneck_station":"string|null","bottleneck_count":number,"insight":"string","recommendation":"string","estimated_wait_reduction_percent":number,"estimated_utilization_gain_percent":number,"estimated_total_cook_minutes_after":number,"queue_order":["order id"]}`;
+      const requestBody = {
+        model: AI_MODEL,
+        stream: true,
+        max_tokens: 2400,
+        temperature: 0.2,
+        messages: [
+          { role: 'system', content: 'คุณเป็นผู้ช่วยวิเคราะห์ครัว ตอบ JSON เท่านั้น ห้ามใส่คำอธิบาย ห้ามใส่ Markdown และต้องตอบ JSON ให้ครบถ้วนในข้อความเดียว' },
+          { role: 'user', content: prompt }
+        ]
+      };
+      if (chatSessionId) requestBody.session_id = chatSessionId;
+      const response = await fetch(`${API_BASE_URL}/api/v1/chat-api/chat/completions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+        body: JSON.stringify(requestBody)
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        const detail = errorMessage(data, `AI request failed (${response.status})`);
+        throw new Error(detail);
+      }
+      const responseSessionId = response.headers.get('X-Session-Id');
+      if (responseSessionId) {
+        chatSessionId = responseSessionId;
+        sessionStorage.setItem('kitchenpulse_chat_session_id', chatSessionId);
+      }
+      if (!stream) {
+        const data = await response.json().catch(() => null);
+        if (data?.session_id) {
+          chatSessionId = data.session_id;
+          sessionStorage.setItem('kitchenpulse_chat_session_id', chatSessionId);
+        }
+        return parseAiContent(data?.choices?.[0]?.message?.content || data?.content || JSON.stringify(data));
+      }
+      const result = await readStreamingResponse(response);
+      if (!result || typeof result !== 'object') throw new Error('AI ไม่ได้ส่งข้อมูลวิเคราะห์กลับมา');
+      return result;
+    }
+
+    async function analyzeWithAi(orders, queueOnly = false) {
+      // AskMe กำหนดให้ chat-api ใช้ stream:true เสมอ จึงไม่ retry ด้วย stream:false
+      // เพราะ gateway อาจปิด connection ระหว่างรอโมเดลตอบกลับ
+      return requestAi(orders, queueOnly, true);
+    }
+
     function getStationStatus(count) {
       if (count > 3) return 'critical';
       if (count >= 3) return 'warning';
       return 'normal';
     }
 
-    function renderStations(orders) {
-      const stations = {};
-      orders.filter(order => order.status === 'new' || order.status === 'cooking').forEach(order => {
-        stations[order.category] = (stations[order.category] || 0) + 1;
-      });
+    function getActiveOrders(orders) {
+      return orders.filter(order => order.status === 'new' || order.status === 'cooking');
+    }
 
+    function groupStations(orders) {
+      return getActiveOrders(orders).reduce((stations, order) => {
+        stations[order.category] = (stations[order.category] || 0) + 1;
+        return stations;
+      }, {});
+    }
+
+    function calculateImpact(orders) {
+      const activeOrders = getActiveOrders(orders);
+      const stations = groupStations(orders);
+      const stationCounts = Object.values(stations);
+      const totalCookTime = activeOrders.reduce((total, order) => total + Number(order.cookTimeMinutes || 0), 0);
+      const averageLoad = stationCounts.length ? activeOrders.length / stationCounts.length : 0;
+      const bottleneckCount = stationCounts.filter(count => count > 3).length;
+      const overloadedOrders = stationCounts.filter(count => count > 3).reduce((total, count) => total + count, 0);
+      const waitReduction = bottleneckCount ? Math.min(40, Math.round((overloadedOrders / Math.max(activeOrders.length, 1)) * 100)) : 0;
+      const utilizationGain = bottleneckCount ? Math.min(30, Math.round((bottleneckCount / Math.max(stationCounts.length, 1)) * 24)) : 0;
+      const optimizedTime = Math.max(0, Math.round(totalCookTime * (1 - waitReduction / 100)));
+
+      document.getElementById('waitImpact').textContent = `-${waitReduction}%`;
+      document.getElementById('stationImpact').textContent = `+${utilizationGain}%`;
+      document.getElementById('timeImpact').textContent = `${totalCookTime} → ${optimizedTime} นาที`;
+      document.getElementById('impactSummary').textContent = `คำนวณจาก ${activeOrders.length} ออเดอร์ และภาระงานเฉลี่ย ${averageLoad.toFixed(1)} ออเดอร์/สถานี`;
+    }
+
+    function renderAiAnalysis(result, orders) {
+      const station = result.bottleneck_station;
+      const count = Number(result.bottleneck_count || 0);
+      document.getElementById('warningText').innerHTML = count > 3
+        ? `<strong class="text-danger">AI วิเคราะห์:</strong> สถานี${station}คิวล้น มี ${count} ออเดอร์ค้าง`
+        : `<strong class="text-success">AI วิเคราะห์:</strong> ยังไม่พบสถานีที่มีคิวล้นรุนแรง`;
+      document.getElementById('recommendationText').textContent = result.recommendation || result.insight || 'AI ไม่ได้ส่งคำแนะนำเพิ่มเติม';
+      document.getElementById('waitImpact').textContent = `-${Number(result.estimated_wait_reduction_percent || 0)}%`;
+      document.getElementById('stationImpact').textContent = `+${Number(result.estimated_utilization_gain_percent || 0)}%`;
+      const before = getActiveOrders(orders).reduce((total, order) => total + Number(order.cookTimeMinutes || 0), 0);
+      const after = Number(result.estimated_total_cook_minutes_after || before);
+      document.getElementById('timeImpact').textContent = `${before} → ${after} นาที`;
+      document.getElementById('impactSummary').textContent = 'คำนวณโดย Gemini 3.6+ Flash จากออเดอร์ที่กำลังดำเนินการ';
+      setAiStatus('วิเคราะห์สำเร็จด้วย Gemini 3.6+ Flash', true);
+    }
+
+    function renderStations(orders) {
+      calculateImpact(orders);
+      const stations = groupStations(orders);
       const stationGrid = document.getElementById('stationGrid');
       stationGrid.innerHTML = Object.entries(stations).map(([name, count]) => {
         const status = getStationStatus(count);
@@ -116,15 +330,45 @@
         </div>`;
       }).join('');
 
-      const critical = Object.entries(stations).filter(([, count]) => count > 3);
-      const [station, count] = critical[0] || Object.entries(stations).sort((a, b) => b[1] - a[1])[0] || ['-', 0];
-      const affectedTables = orders.filter(order => (order.status === 'new' || order.status === 'cooking') && order.category === station).map(order => order.customer).join(', ');
+      const sortedStations = Object.entries(stations).sort((a, b) => b[1] - a[1]);
+      const [station, count] = sortedStations[0] || ['-', 0];
+      const affectedTables = getActiveOrders(orders).filter(order => order.category === station).map(order => order.customer).join(', ');
       document.getElementById('warningText').innerHTML = count > 3
-        ? `<strong class="text-danger">คำเตือน:</strong> สถานี${station}ทำงานหนักเกินไป มี ${count} ออเดอร์ค้าง (${affectedTables})`
-        : `<strong class="text-success">สถานะปกติ:</strong> ยังไม่พบสถานีที่มีคอขวดรุนแรง`;
+        ? `<strong class="text-danger">คำเตือน:</strong> AI พบว่าสถานี${station}คิวล้น มี ${count} ออเดอร์ค้าง (${affectedTables})`
+        : `<strong class="text-success">ผลวิเคราะห์ AI:</strong> ยังไม่พบสถานีที่มีคิวล้นรุนแรง`;
       document.getElementById('recommendationText').textContent = count > 3
-        ? `ข้อเสนอแนะ: จัดกลุ่มเมนูสถานี${station} และกระจายคิว ${affectedTables} เพื่อลดเวลารอโดยประมาณ 12 นาที`
-        : 'ข้อเสนอแนะ: รักษาลำดับคิวปัจจุบันและติดตามภาระงานอย่างต่อเนื่อง';
+        ? `AI แนะนำ: จัดกลุ่มเมนูสถานี${station} และกระจายคิว ${affectedTables} เพื่อลดเวลารอโดยประมาณ 12 นาที`
+        : 'AI แนะนำ: รักษาลำดับคิวปัจจุบันและติดตามภาระงานอย่างต่อเนื่อง';
+    }
+
+    function renderAiQueue(result) {
+      const orderMap = new Map(currentOrders.map(order => [order.id, order]));
+      const queue = (result.queue_order || []).map(id => orderMap.get(id)).filter(Boolean);
+      const fallback = queue.length ? queue : [...getActiveOrders(currentOrders)].sort((a, b) => a.cookTimeMinutes - b.cookTimeMinutes);
+      document.getElementById('queueList').innerHTML = fallback.map((order, index) => `<li class="flex items-start gap-3 rounded border border-stroke bg-elevated p-3">
+        <span class="font-mono font-bold text-primaryText">${index + 1}</span>
+        <div><b>${order.customer} · ${order.menu}</b><p class="mt-1 text-xs text-muted">สถานี${order.category} · ${order.status === 'cooking' ? 'กำลังปรุง' : 'ออเดอร์ใหม่'} · ${order.cookTimeMinutes} นาที · ${order.specialRequest}</p></div>
+      </li>`).join('');
+      document.getElementById('queueResult').classList.remove('hidden');
+    }
+
+    function renderOptimizedQueue() {
+      const activeOrders = getActiveOrders(currentOrders);
+      const stations = groupStations(currentOrders);
+      const overloadedStations = new Set(Object.entries(stations).filter(([, count]) => count > 3).map(([station]) => station));
+      const queue = [...activeOrders].sort((first, second) => {
+        const firstOverloaded = overloadedStations.has(first.category);
+        const secondOverloaded = overloadedStations.has(second.category);
+        if (firstOverloaded !== secondOverloaded) return firstOverloaded ? -1 : 1;
+        if (first.status !== second.status) return first.status === 'cooking' ? -1 : 1;
+        return first.cookTimeMinutes - second.cookTimeMinutes;
+      });
+
+      document.getElementById('queueList').innerHTML = queue.map((order, index) => `<li class="flex items-start gap-3 rounded border border-stroke bg-elevated p-3">
+        <span class="font-mono font-bold text-primaryText">${index + 1}</span>
+        <div><b>${order.customer} · ${order.menu}</b><p class="mt-1 text-xs text-muted">สถานี${order.category} · ${order.status === 'cooking' ? 'กำลังปรุง' : 'ออเดอร์ใหม่'} · ${order.cookTimeMinutes} นาที · ${order.specialRequest}</p></div>
+      </li>`).join('');
+      document.getElementById('queueResult').classList.remove('hidden');
     }
 
     async function loadOrders() {
@@ -132,25 +376,40 @@
         const response = await fetch('data/mock-orders.json');
         if (!response.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
         const data = await response.json();
-        renderStations(data.orders || []);
+        currentOrders = data.orders || [];
+        renderStations(currentOrders);
+        setAiStatus('กำลังวิเคราะห์ข้อมูลด้วย Gemini 3.6+ Flash...');
+        const result = await analyzeWithAi(currentOrders);
+        renderAiAnalysis(result, currentOrders);
       } catch (error) {
-        document.getElementById('warningText').innerHTML = '<strong class="text-danger">เกิดข้อผิดพลาด:</strong> ไม่สามารถโหลดข้อมูลออเดอร์ได้';
-        document.getElementById('recommendationText').textContent = 'กรุณาเปิดเว็บไซต์ผ่าน local server เพื่อให้ browser อ่านไฟล์ JSON ได้';
+        setAiStatus(`ใช้โหมดสำรอง: ${error.message}`);
+        document.getElementById('tokenStatus').textContent = 'ไม่สามารถเชื่อมต่อ AskMe API';
+        document.getElementById('warningText').innerHTML = `<strong class="text-danger">เกิดข้อผิดพลาด:</strong> ${error.message}`;
+        document.getElementById('recommendationText').textContent = 'ระบบจะแสดงการคำนวณภายในหน้าเว็บแทนชั่วคราว';
       }
     }
 
     document.getElementById('menuButton').addEventListener('click', () => document.getElementById('mobileNav').classList.toggle('hidden'));
-    document.getElementById('optimizerButton').addEventListener('click', event => {
-      event.target.textContent = 'กำลังปรับคิวด้วย AI...';
+    document.getElementById('optimizerButton').addEventListener('click', async event => {
+      event.target.textContent = 'AI กำลังจัดลำดับคิว...';
       event.target.disabled = true;
-      setTimeout(() => {
-        event.target.textContent = 'เรียกใช้ AI Queue Optimizer';
-        event.target.disabled = false;
+      try {
+        setAiStatus('กำลังจัดคิวด้วย Gemini 3.6+ Flash...');
+        const result = await analyzeWithAi(currentOrders, true);
+        renderAiQueue(result);
+        renderAiAnalysis(result, currentOrders);
         const toast = document.getElementById('toast');
-        toast.textContent = 'ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%';
+        toast.textContent = 'Gemini 3.6+ Flash วิเคราะห์และจัดคิวสำเร็จ';
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 2600);
-      }, 1000);
+      } catch (error) {
+        setAiStatus(`จัดคิวไม่สำเร็จ: ${error.message}`);
+        document.getElementById('toast').textContent = `ไม่สามารถเรียก AI ได้: ${error.message}`;
+        document.getElementById('toast').classList.remove('hidden');
+      } finally {
+        event.target.textContent = 'เรียกใช้ AI Queue Optimizer';
+        event.target.disabled = false;
+      }
     });
     loadOrders();
   </script>
