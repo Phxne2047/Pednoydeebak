@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KitchenPulse AI - เพิ่มประสิทธิภาพ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#131316', surface: '#1f1f22', elevated: '#27272a', high: '#2a2a2d', stroke: '#3f3f46', muted: '#e0c0b1', ink: '#e4e1e6', primary: '#f97316', primaryText: '#ffb690', warning: '#f59e0b', success: '#10b981', danger: '#ef4444'
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .nav-link.active { background: rgba(249, 115, 22, .18); color: #ffb690; border-color: #f97316; }
+  </style>
+</head>
+<body class="bg-background font-sans text-ink">
+  <header class="sticky top-0 z-40 border-b border-stroke bg-background/95 backdrop-blur">
+    <div class="mx-auto flex h-24 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6">
+      <a href="index.html" class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-5xl text-primary">restaurant</span>
+        <div>
+          <h1 class="font-mono text-2xl font-bold tracking-tight text-primaryText">KitchenPulse AI</h1>
+          <p class="hidden font-mono text-xs font-bold uppercase tracking-[0.18em] text-muted sm:block">Smart kitchen operating system</p>
+        </div>
+      </a>
+      <nav class="hidden items-center gap-1 lg:flex" aria-label="เมนูหลัก">
+        <a class="nav-link rounded-xl border-b-4 border-transparent px-5 py-4 text-base text-muted hover:bg-high hover:text-ink" href="index.html">กระดานครัวสด</a>
+        <a class="nav-link active rounded-xl border-b-4 border-transparent px-5 py-4 text-base font-semibold" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
+        <a class="nav-link rounded-xl border-b-4 border-transparent px-5 py-4 text-base text-muted hover:bg-high hover:text-ink" href="qc.html">AI QC ประตูตรวจ</a>
+        <a class="nav-link rounded-xl border-b-4 border-transparent px-5 py-4 text-base text-muted hover:bg-high hover:text-ink" href="analytics.html">การวิเคราะห์</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button class="rounded-full p-2 text-muted hover:bg-high hover:text-primary" title="ระบบแจ้งเตือน"><span class="material-symbols-outlined">notifications</span></button>
+        <span class="hidden rounded-full border border-success/40 bg-success/10 px-4 py-2 font-mono text-xs text-success sm:inline-flex">● ระบบปกติ</span>
+        <button class="rounded-lg border border-stroke px-3 py-2 text-muted lg:hidden" id="menuButton"><span class="material-symbols-outlined">menu</span></button>
+        <div class="hidden items-center gap-3 border-l border-stroke pl-4 sm:flex"><div class="text-right"><p class="font-semibold">หัวหน้าเชฟ</p><p class="font-mono text-xs text-muted">ครัวหลัก</p></div><div class="grid h-12 w-12 place-items-center rounded-full border border-stroke bg-high"><span class="material-symbols-outlined text-muted">person</span></div></div>
+      </div>
+    </div>
+    <nav class="hidden border-t border-stroke bg-surface p-3 lg:hidden" id="mobileNav">
+      <div class="grid grid-cols-2 gap-2">
+        <a class="nav-link rounded-lg px-3 py-2 text-left text-sm text-muted" href="index.html">กระดานครัวสด</a>
+        <a class="nav-link active rounded-lg px-3 py-2 text-left text-sm" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
+        <a class="nav-link rounded-lg px-3 py-2 text-left text-sm text-muted" href="qc.html">AI QC</a>
+        <a class="nav-link rounded-lg px-3 py-2 text-left text-sm text-muted" href="analytics.html">การวิเคราะห์</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6">
+    <div>
+      <p class="font-mono text-xs uppercase tracking-widest text-primaryText">AI operations</p>
+      <h2 class="mt-2 text-3xl font-bold">เพิ่มประสิทธิภาพปัญหาคอขวด</h2>
+      <p class="mt-1 text-muted">ให้ AI วิเคราะห์ภาระงานและจัดคิวจากออเดอร์จริงในครัว</p>
+    </div>
+    <div class="mb-2 flex flex-wrap items-center gap-3 text-xs text-muted">
+      <span class="rounded-full border border-primary/40 bg-primary/10 px-3 py-1" id="aiStatus">AI: กำลังเตรียมระบบ...</span>
+      <span id="tokenStatus">กำลังเข้าสู่ระบบ...</span>
+    </div>
+    <div class="grid gap-4 md:grid-cols-3" id="stationGrid"></div>
+    <div class="grid gap-4 lg:grid-cols-3">
+      <div class="rounded-xl border-2 border-primary bg-primary/10 p-6 lg:col-span-2">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-3xl text-primary">smart_toy</span>
+          <h3 class="text-xl font-bold text-primaryText">ข้อมูลเชิงลึก AI</h3>
+        </div>
+        <p class="mt-4 border-l-4 border-danger pl-4 leading-7" id="warningText">กำลังวิเคราะห์ข้อมูลออเดอร์...</p>
+        <p class="mt-4 text-muted" id="recommendationText">กำลังสร้างข้อเสนอแนะ...</p>
+        <button class="mt-6 rounded-lg bg-primary px-5 py-3 font-bold text-white" id="optimizerButton">เรียกใช้ AI Queue Optimizer</button>
+        <div class="mt-5 hidden rounded-lg border border-success/40 bg-success/10 p-4" id="queueResult">
+          <h4 class="font-bold text-success">คิวที่ AI จัดใหม่</h4>
+          <p class="mt-1 text-sm text-muted">เรียงตามสถานีและเวลาปรุง เพื่อให้สถานีที่ล้นรับงานสำคัญก่อน</p>
+          <ol class="mt-3 space-y-2 text-sm" id="queueList"></ol>
+        </div>
+      </div>
+      <div class="rounded-xl border border-stroke bg-elevated p-6">
+        <h3 class="font-bold">ผลกระทบโดยประมาณจาก AI</h3>
+        <p class="mt-1 text-xs text-muted" id="impactSummary">กำลังคำนวณจากออเดอร์จริง...</p>
+        <div class="mt-6 space-y-4">
+          <div class="flex justify-between"><span class="text-muted">เวลารอคิว</span><b class="text-success" id="waitImpact">-</b></div>
+          <div class="flex justify-between"><span class="text-muted">การใช้สถานี</span><b class="text-primaryText" id="stationImpact">-</b></div>
+          <div class="flex justify-between"><span class="text-muted">เวลาปรุงรวม</span><b class="text-ink" id="timeImpact">-</b></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="fixed bottom-5 left-1/2 hidden -translate-x-1/2 rounded-lg border border-success/40 bg-elevated px-4 py-3 text-sm text-success shadow-xl" id="toast"></div>
+  <script>
+    const stationStyles = {
+      critical: { border: 'border-danger/60', background: 'bg-danger/10', badge: 'bg-danger', number: 'text-danger', bar: 'bg-danger', label: 'โอเวอร์โหลด' },
+      warning: { border: 'border-warning/40', background: 'bg-elevated', badge: 'bg-warning', number: 'text-warning', bar: 'bg-warning', label: 'ปานกลาง' },
+      normal: { border: 'border-success/40', background: 'bg-elevated', badge: 'bg-success', number: 'text-success', bar: 'bg-success', label: 'ปกติ' }
+    };
+
+    const API_BASE_URL = 'https://itmsuhackathon.askme.co.th';
+    const LOGIN_EMAIL = '67011212047@msu.ac.th';
+    const LOGIN_PASSWORD = 'Phone@1324';
+    const AI_MODEL = 'gemini-3.6-flash';
+    let currentOrders = [];
+    let accessToken = '';
+    let chatSessionId = sessionStorage.getItem('kitchenpulse_chat_session_id') || '';
+
+    function setAiStatus(message, success = false) {
+      const element = document.getElementById('aiStatus');
+      element.textContent = `AI: ${message}`;
+      element.className = `rounded-full border px-3 py-1 ${success ? 'border-success/40 bg-success/10 text-success' : 'border-primary/40 bg-primary/10 text-primaryText'}`;
+    }
+
+    function errorMessage(data, fallback) {
+      if (data?.error && typeof data.error === 'object') return data.error.message || data.error.code || fallback;
+      if (data?.message) return data.message;
+      if (typeof data?.error === 'string') return data.error;
+      return fallback;
+    }
+
+    async function loginToAskMe() {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email: LOGIN_EMAIL, password: LOGIN_PASSWORD })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(errorMessage(data, `Login failed (${response.status})`));
+      if (data.mfa_required) throw new Error('บัญชีนี้ต้องยืนยัน MFA ก่อนใช้งาน');
+      accessToken = data.access_token || data.token || data.data?.access_token || '';
+      if (!accessToken) throw new Error('ไม่พบ access_token จากระบบ Login');
+      sessionStorage.setItem('kitchenpulse_access_token', accessToken);
+      document.getElementById('tokenStatus').textContent = 'เข้าสู่ระบบ AskMe สำเร็จ';
+    }
+
+    async function ensureLogin() {
+      accessToken = sessionStorage.getItem('kitchenpulse_access_token') || '';
+      if (accessToken) return;
+      await loginToAskMe();
+    }
+
+    function parseAiContent(content) {
+      const text = String(content || '').trim();
+      const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
+      const start = cleaned.indexOf('{');
+      if (start < 0) throw new Error(`AI ส่งผลลัพธ์ไม่ใช่ JSON: ${cleaned.slice(0, 160) || 'ไม่ได้รับข้อความ'}`);
+
+      let depth = 0;
+      let inString = false;
+      let escaped = false;
+      for (let index = start; index < cleaned.length; index += 1) {
+        const character = cleaned[index];
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (character === '\\' && inString) {
+          escaped = true;
+          continue;
+        }
+        if (character === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (inString) continue;
+        if (character === '{') depth += 1;
+        if (character === '}') {
+          depth -= 1;
+          if (depth === 0) {
+            try {
+              return JSON.parse(cleaned.slice(start, index + 1));
+            } catch (error) {
+              throw new Error('AI ส่ง JSON ไม่ถูกต้อง');
+            }
+          }
+        }
+      }
+      throw new Error(`AI ส่ง JSON ไม่ครบหรือถูกตัดกลางคำตอบ: ${cleaned.slice(0, 160)}`);
+    }
+
+    async function readStreamingResponse(response) {
+      if (!response.body) throw new Error('API ไม่ส่ง streaming body กลับมา');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let content = '';
+      const consumeLine = line => {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) return;
+        const payload = trimmed.slice(5).trim();
+        if (!payload || payload === '[DONE]') return;
+        try {
+          const chunk = JSON.parse(payload);
+          const choice = chunk.choices?.[0];
+          const delta = choice?.delta?.content || choice?.message?.content || '';
+          content += typeof delta === 'string' ? delta : (delta?.text || '');
+        } catch (error) {
+          // SSE อาจแบ่ง JSON หนึ่ง event ข้ามหลายบรรทัด ให้ข้ามเฉพาะ event ที่อ่านไม่ได้
+        }
+      };
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop() || '';
+        lines.forEach(consumeLine);
+      }
+      buffer += decoder.decode();
+      if (buffer.trim()) consumeLine(buffer);
+      if (!content.trim()) throw new Error('AI ไม่ได้ส่งข้อความกลับมา');
+      return parseAiContent(content);
+    }
+
+    async function requestAi(orders, queueOnly = false, stream = true) {
+      await ensureLogin();
+      const prompt = `คุณคือ KitchenPulse AI สำหรับวิเคราะห์การปฏิบัติงานครัว
+ข้อมูลออเดอร์:
+${JSON.stringify(orders)}
+งาน: ${queueOnly ? 'จัดลำดับคิว active โดยคำนึงถึงคอขวด สถานะ และเวลาปรุง' : 'วิเคราะห์ว่าสถานีใดคิวล้น พร้อมคำนวณผลกระทบโดยประมาณ'}
+ตอบ JSON object เดียวเท่านั้น ห้ามใส่ Markdown ห้ามใส่ข้อความก่อนหรือหลัง JSON และต้องมีฟิลด์ตาม schema นี้:
+{"bottleneck_station":"string|null","bottleneck_count":0,"insight":"string","recommendation":"string","estimated_wait_reduction_percent":0,"estimated_utilization_gain_percent":0,"estimated_total_cook_minutes_after":0,"queue_order":["order id"]}`;
+      const requestBody = {
+        model: AI_MODEL,
+        stream: true,
+        max_tokens: 2400,
+        temperature: 0.2,
+        messages: [
+          { role: 'system', content: 'คุณเป็นผู้ช่วยวิเคราะห์ครัว ตอบ JSON เท่านั้น ห้ามใส่คำอธิบาย ห้ามใส่ Markdown และต้องตอบ JSON ให้ครบถ้วนในข้อความเดียว' },
+          { role: 'user', content: prompt }
+        ]
+      };
+      if (chatSessionId) requestBody.session_id = chatSessionId;
+      const response = await fetch(`${API_BASE_URL}/api/v1/chat-api/chat/completions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+        body: JSON.stringify(requestBody)
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        const detail = errorMessage(data, `AI request failed (${response.status})`);
+        throw new Error(detail);
+      }
+      const responseSessionId = response.headers.get('X-Session-Id');
+      if (responseSessionId) {
+        chatSessionId = responseSessionId;
+        sessionStorage.setItem('kitchenpulse_chat_session_id', chatSessionId);
+      }
+      if (!stream) {
+        const data = await response.json().catch(() => null);
+        if (data?.session_id) {
+          chatSessionId = data.session_id;
+          sessionStorage.setItem('kitchenpulse_chat_session_id', chatSessionId);
+        }
+        return parseAiContent(data?.choices?.[0]?.message?.content || data?.content || JSON.stringify(data));
+      }
+      const result = await readStreamingResponse(response);
+      if (!result || typeof result !== 'object') throw new Error('AI ไม่ได้ส่งข้อมูลวิเคราะห์กลับมา');
+      return result;
+    }
+
+    async function analyzeWithAi(orders, queueOnly = false) {
+      // AskMe กำหนดให้ chat-api ใช้ stream:true เสมอ จึงไม่ retry ด้วย stream:false
+      // เพราะ gateway อาจปิด connection ระหว่างรอโมเดลตอบกลับ
+      return requestAi(orders, queueOnly, true);
+    }
+
+    function getStationStatus(count) {
+      if (count > 3) return 'critical';
+      if (count >= 3) return 'warning';
+      return 'normal';
+    }
+
+    function getActiveOrders(orders) {
+      return orders.filter(order => order.status === 'new' || order.status === 'cooking');
+    }
+
+    function groupStations(orders) {
+      return getActiveOrders(orders).reduce((stations, order) => {
+        stations[order.category] = (stations[order.category] || 0) + 1;
+        return stations;
+      }, {});
+    }
+
+    function calculateImpact(orders) {
+      const activeOrders = getActiveOrders(orders);
+      const stations = groupStations(orders);
+      const stationCounts = Object.values(stations);
+      const totalCookTime = activeOrders.reduce((total, order) => total + Number(order.cookTimeMinutes || 0), 0);
+      const averageLoad = stationCounts.length ? activeOrders.length / stationCounts.length : 0;
+      const bottleneckCount = stationCounts.filter(count => count > 3).length;
+      const overloadedOrders = stationCounts.filter(count => count > 3).reduce((total, count) => total + count, 0);
+      const waitReduction = bottleneckCount ? Math.min(40, Math.round((overloadedOrders / Math.max(activeOrders.length, 1)) * 100)) : 0;
+      const utilizationGain = bottleneckCount ? Math.min(30, Math.round((bottleneckCount / Math.max(stationCounts.length, 1)) * 24)) : 0;
+      const optimizedTime = Math.max(0, Math.round(totalCookTime * (1 - waitReduction / 100)));
+
+      document.getElementById('waitImpact').textContent = `-${waitReduction}%`;
+      document.getElementById('stationImpact').textContent = `+${utilizationGain}%`;
+      document.getElementById('timeImpact').textContent = `${totalCookTime} → ${optimizedTime} นาที`;
+      document.getElementById('impactSummary').textContent = `คำนวณจาก ${activeOrders.length} ออเดอร์ และภาระงานเฉลี่ย ${averageLoad.toFixed(1)} ออเดอร์/สถานี`;
+    }
+
+    function renderAiAnalysis(result, orders) {
+      const station = result.bottleneck_station;
+      const count = Number(result.bottleneck_count || 0);
+      document.getElementById('warningText').innerHTML = count > 3
+        ? `<strong class="text-danger">AI วิเคราะห์:</strong> สถานี${station}คิวล้น มี ${count} ออเดอร์ค้าง`
+        : `<strong class="text-success">AI วิเคราะห์:</strong> ยังไม่พบสถานีที่มีคิวล้นรุนแรง`;
+      document.getElementById('recommendationText').textContent = result.recommendation || result.insight || 'AI ไม่ได้ส่งคำแนะนำเพิ่มเติม';
+      document.getElementById('waitImpact').textContent = `-${Number(result.estimated_wait_reduction_percent || 0)}%`;
+      document.getElementById('stationImpact').textContent = `+${Number(result.estimated_utilization_gain_percent || 0)}%`;
+      const before = getActiveOrders(orders).reduce((total, order) => total + Number(order.cookTimeMinutes || 0), 0);
+      const after = Number(result.estimated_total_cook_minutes_after || before);
+      document.getElementById('timeImpact').textContent = `${before} → ${after} นาที`;
+      document.getElementById('impactSummary').textContent = 'คำนวณโดย Gemini 3.6+ Flash จากออเดอร์ที่กำลังดำเนินการ';
+      setAiStatus('วิเคราะห์สำเร็จด้วย Gemini 3.6+ Flash', true);
+    }
+
+    function renderStations(orders) {
+      calculateImpact(orders);
+      const stations = groupStations(orders);
+      const stationGrid = document.getElementById('stationGrid');
+      stationGrid.innerHTML = Object.entries(stations).map(([name, count]) => {
+        const status = getStationStatus(count);
+        const style = stationStyles[status];
+        const percentage = Math.min(100, Math.round((count / 5) * 100));
+        return `<div class="rounded-xl border ${style.border} ${style.background} p-5">
+          <div class="flex justify-between gap-3"><h3 class="font-mono font-bold">สถานี${name}</h3><span class="rounded px-2 py-1 font-mono text-xs ${style.badge} ${status === 'warning' || status === 'normal' ? 'text-black' : ''}">${style.label}</span></div>
+          <p class="mt-6 text-5xl font-bold ${style.number}">${count}</p>
+          <p class="mt-1 text-sm text-muted">คำสั่งซื้อที่รอดำเนินการ</p>
+          <div class="mt-5 h-2 rounded-full bg-stroke"><div class="h-full rounded-full ${style.bar}" style="width: ${percentage}%"></div></div>
+        </div>`;
+      }).join('');
+
+      const sortedStations = Object.entries(stations).sort((a, b) => b[1] - a[1]);
+      const [station, count] = sortedStations[0] || ['-', 0];
+      const affectedTables = getActiveOrders(orders).filter(order => order.category === station).map(order => order.customer).join(', ');
+      document.getElementById('warningText').innerHTML = count > 3
+        ? `<strong class="text-danger">คำเตือน:</strong> AI พบว่าสถานี${station}คิวล้น มี ${count} ออเดอร์ค้าง (${affectedTables})`
+        : `<strong class="text-success">ผลวิเคราะห์ AI:</strong> ยังไม่พบสถานีที่มีคิวล้นรุนแรง`;
+      document.getElementById('recommendationText').textContent = count > 3
+        ? `AI แนะนำ: จัดกลุ่มเมนูสถานี${station} และกระจายคิว ${affectedTables} เพื่อลดเวลารอโดยประมาณ 12 นาที`
+        : 'AI แนะนำ: รักษาลำดับคิวปัจจุบันและติดตามภาระงานอย่างต่อเนื่อง';
+    }
+
+    function renderAiQueue(result) {
+      const orderMap = new Map(currentOrders.map(order => [order.id, order]));
+      const queue = (result.queue_order || []).map(id => orderMap.get(id)).filter(Boolean);
+      const fallback = queue.length ? queue : [...getActiveOrders(currentOrders)].sort((a, b) => a.cookTimeMinutes - b.cookTimeMinutes);
+      document.getElementById('queueList').innerHTML = fallback.map((order, index) => `<li class="flex items-start gap-3 rounded border border-stroke bg-elevated p-3">
+        <span class="font-mono font-bold text-primaryText">${index + 1}</span>
+        <div><b>${order.customer} · ${order.menu}</b><p class="mt-1 text-xs text-muted">สถานี${order.category} · ${order.status === 'cooking' ? 'กำลังปรุง' : 'ออเดอร์ใหม่'} · ${order.cookTimeMinutes} นาที · ${order.specialRequest}</p></div>
+      </li>`).join('');
+      document.getElementById('queueResult').classList.remove('hidden');
+    }
+
+    function renderOptimizedQueue() {
+      const activeOrders = getActiveOrders(currentOrders);
+      const stations = groupStations(currentOrders);
+      const overloadedStations = new Set(Object.entries(stations).filter(([, count]) => count > 3).map(([station]) => station));
+      const queue = [...activeOrders].sort((first, second) => {
+        const firstOverloaded = overloadedStations.has(first.category);
+        const secondOverloaded = overloadedStations.has(second.category);
+        if (firstOverloaded !== secondOverloaded) return firstOverloaded ? -1 : 1;
+        if (first.status !== second.status) return first.status === 'cooking' ? -1 : 1;
+        return first.cookTimeMinutes - second.cookTimeMinutes;
+      });
+
+      document.getElementById('queueList').innerHTML = queue.map((order, index) => `<li class="flex items-start gap-3 rounded border border-stroke bg-elevated p-3">
+        <span class="font-mono font-bold text-primaryText">${index + 1}</span>
+        <div><b>${order.customer} · ${order.menu}</b><p class="mt-1 text-xs text-muted">สถานี${order.category} · ${order.status === 'cooking' ? 'กำลังปรุง' : 'ออเดอร์ใหม่'} · ${order.cookTimeMinutes} นาที · ${order.specialRequest}</p></div>
+      </li>`).join('');
+      document.getElementById('queueResult').classList.remove('hidden');
+    }
+
+    const DEFAULT_MOCK_ORDERS = [
+      { id: "MSU-1001", customer: "โต๊ะ 3", menu: "กะเพราหมูสับไข่ดาว", category: "ผัด", cookTimeMinutes: 8, specialRequest: "ไม่ใส่ผักชี", status: "new" },
+      { id: "MSU-1002", customer: "โต๊ะ 5", menu: "ต้มยำกุ้งน้ำข้น", category: "ต้ม", cookTimeMinutes: 12, specialRequest: "เผ็ดน้อย ไม่ใส่ถั่วลิสง", status: "cooking" },
+      { id: "MSU-1003", customer: "โต๊ะ 8", menu: "ข้าวผัดหมู", category: "ผัด", cookTimeMinutes: 10, specialRequest: "ไม่ใส่ต้นหอม", status: "cooking" },
+      { id: "MSU-1004", customer: "โต๊ะ 2", menu: "กะเพราไก่", category: "ผัด", cookTimeMinutes: 7, specialRequest: "เพิ่มไข่ดาว ไม่ใส่พริก", status: "cooking" },
+      { id: "MSU-1005", customer: "โต๊ะ 7", menu: "ผัดไทยกุ้งสด", category: "ผัด", cookTimeMinutes: 11, specialRequest: "ไม่ใส่ถั่วงอก", status: "qc" },
+      { id: "MSU-1006", customer: "โต๊ะ 1", menu: "ข้าวกะเพราเนื้อ", category: "ผัด", cookTimeMinutes: 9, specialRequest: "ไม่ใส่ผักชีและหอมใหญ่", status: "qc" },
+      { id: "MSU-1007", customer: "โต๊ะ 4", menu: "ข้าวผัดปู", category: "ผัด", cookTimeMinutes: 13, specialRequest: "ไม่ใส่พริกไทย", status: "done" },
+      { id: "MSU-1008", customer: "โต๊ะ 6", menu: "ลาบหมูคั่ว", category: "ยำ", cookTimeMinutes: 9, specialRequest: "เผ็ดกลาง เพิ่มข้าวคั่ว", status: "done" },
+      { id: "MSU-1009", customer: "โต๊ะ 6", menu: "ลาบหมูคั่ว", category: "ยำ", cookTimeMinutes: 9, specialRequest: "เผ็ดกลาง เพิ่มข้าวคั่ว", status: "cooking" }
+    ];
+
+    async function loadOrders() {
+      try {
+        const response = await fetch('/api/orders').catch(() => fetch('data/mock-orders.json'));
+        if (!response.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
+        const data = await response.json();
+<<<<<<< HEAD
+        renderStations(data.orders || DEFAULT_MOCK_ORDERS);
+      } catch (error) {
+        renderStations(DEFAULT_MOCK_ORDERS);
+=======
+        currentOrders = data.orders || [];
+        renderStations(currentOrders);
+        setAiStatus('กำลังวิเคราะห์ข้อมูลด้วย Gemini 3.6+ Flash...');
+        const result = await analyzeWithAi(currentOrders);
+        renderAiAnalysis(result, currentOrders);
+      } catch (error) {
+        setAiStatus(`ใช้โหมดสำรอง: ${error.message}`);
+        document.getElementById('tokenStatus').textContent = 'ไม่สามารถเชื่อมต่อ AskMe API';
+        document.getElementById('warningText').innerHTML = `<strong class="text-danger">เกิดข้อผิดพลาด:</strong> ${error.message}`;
+        document.getElementById('recommendationText').textContent = 'ระบบจะแสดงการคำนวณภายในหน้าเว็บแทนชั่วคราว';
+>>>>>>> feature/ai-วิเคราะห์ข้อมูล
+      }
+    }
+
+    document.getElementById('menuButton').addEventListener('click', () => document.getElementById('mobileNav').classList.toggle('hidden'));
+    document.getElementById('optimizerButton').addEventListener('click', async event => {
+      event.target.textContent = 'AI กำลังจัดลำดับคิว...';
+      event.target.disabled = true;
+      try {
+        setAiStatus('กำลังจัดคิวด้วย Gemini 3.6+ Flash...');
+        const result = await analyzeWithAi(currentOrders, true);
+        renderAiQueue(result);
+        renderAiAnalysis(result, currentOrders);
+        const toast = document.getElementById('toast');
+        toast.textContent = 'Gemini 3.6+ Flash วิเคราะห์และจัดคิวสำเร็จ';
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2600);
+      } catch (error) {
+        setAiStatus(`จัดคิวไม่สำเร็จ: ${error.message}`);
+        document.getElementById('toast').textContent = `ไม่สามารถเรียก AI ได้: ${error.message}`;
+        document.getElementById('toast').classList.remove('hidden');
+      } finally {
+        event.target.textContent = 'เรียกใช้ AI Queue Optimizer';
+        event.target.disabled = false;
+      }
+    });
+
+    renderStations(DEFAULT_MOCK_ORDERS);
+    loadOrders();
+  </script>
+</body>
+</html>
