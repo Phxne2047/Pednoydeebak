@@ -76,12 +76,12 @@
     },
     {
       "id": "MSU-1009",
-      "customer": "โต๊ะ 10",
-      "menu": "กะเพราหมูสับไข่ดาว",
-      "category": "ผัด",
-      "cookTimeMinutes": 10,
-      "specialRequest": "ไม่ใส่ผักชี",
-      "status": "new"
+      "customer": "โต๊ะ 6",
+      "menu": "ลาบหมูคั่ว",
+      "category": "ยำ",
+      "cookTimeMinutes": 9,
+      "specialRequest": "เผ็ดกลาง เพิ่มข้าวคั่ว",
+      "status": "cooking"
     }
   ]
 }

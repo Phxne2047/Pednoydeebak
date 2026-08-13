@@ -3,12 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KitchenPulse AI - AI QC</title>
+  <title>KitchenPulse AI - AI QC ประตูตรวจ</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet" />
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{background:'#131316',surface:'#1f1f22',elevated:'#27272a',high:'#2a2a2d',stroke:'#3f3f46',muted:'#e0c0b1',ink:'#e4e1e6',primary:'#f97316',primaryText:'#ffb690',warning:'#f59e0b',success:'#10b981',danger:'#ef4444'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']}}}};</script>
-  <style>*{box-sizing:border-box}.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#131316',
+            surface: '#1f1f22',
+            elevated: '#27272a',
+            high: '#2a2a2d',
+            stroke: '#3f3f46',
+            muted: '#e0c0b1',
+            ink: '#e4e1e6',
+            primary: '#f97316',
+            primaryText: '#ffb690',
+            warning: '#f59e0b',
+            success: '#10b981',
+            danger: '#ef4444'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .file-preview { min-height: 300px; }
+  </style>
 </head>
 <body class="bg-background text-ink font-sans">
-  <header class="sticky top-0 z-40 border-b border-stroke bg-background/95 backdrop-blur"><div class="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6"><a href="index.html" class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl text-primary">restaurant</span><div><h1 class="font-mono text-lg font-bold text-primaryText">KitchenPulse AI</h1><p class="hidden font-mono text-[10px] uppercase tracking-widest text-muted sm:block">Smart kitchen operating system</p></div></a><nav class="hidden items-center gap-1 lg:flex"><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="index.html">กระดานครัวสด</a><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="optimizer.html">เพิ่มประสิทธิภาพ</a><a class="rounded-lg bg-primary/20 px-3 py-2 text-sm font-semibold text-primaryText" href="qc.html">AI QC ประตูตรวจ</a><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="analytics.html">การวิเคราะห์</a></nav><div class="flex items-center gap-2"><span class="hidden rounded-full border border-success/40 bg-success/10 px-3 py-1 font-mono text-xs text-success sm:inline-flex">● ระบบปกติ</span><button class="rounded-lg border border-stroke px-3 py-2 text-muted lg:hidden" id="menuButton"><span class="material-symbols-outlined">menu</span></button></div></div><nav class="hidden border-t border-stroke bg-surface p-3 lg:hidden" id="mobileNav"><div class="grid grid-cols-2 gap-2"><a class="rounded-lg p-2 text-sm text-muted" href="index.html">หน้าแรก</a><a class="rounded-lg p-2 text-sm text-muted" href="index.html">กระดานครัวสด</a><a class="rounded-lg p-2 text-sm text-muted" href="optimizer.html">เพิ่มประสิทธิภาพ</a><a class="rounded-lg bg-primary/20 p-2 text-sm text-primaryText" href="qc.html">AI QC</a><a class="rounded-lg p-2 text-sm text-muted" href="analytics.html">การวิเคราะห์</a></div></nav></header>
-  <main class="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6"><div><p class="font-mono text-xs uppercase tracking-widest text-primaryText">TrustPlate vision</p><h2 class="mt-2 text-3xl font-bold">AI QC ประตูตรวจ</h2><p class="mt-1 text-muted">ตรวจสอบอาหารก่อนเสิร์ฟด้วย Computer Vision</p></div><div class="grid gap-4 lg:grid-cols-12"><div class="rounded-xl border border-stroke bg-elevated p-5 lg:col-span-3"><h3 class="text-2xl font-bold">โต๊ะ 3</h3><p class="font-mono text-xs text-muted">ออเดอร์ #8842-A</p><hr class="my-5 border-stroke"><h4 class="text-lg font-bold text-primaryText">ข้าวกะเพราหมูสับ</h4><div class="mt-4 space-y-2 rounded-lg border border-stroke bg-surface p-3"><p class="text-sm font-bold text-danger">⚠ ไม่ใส่ผักชี (แพ้)</p><p class="text-sm text-success">✓ เพิ่มไข่ดาว</p></div></div><div class="relative min-h-[420px] overflow-hidden rounded-xl border-2 border-danger bg-black lg:col-span-6"><div class="absolute left-0 right-0 top-0 z-10 flex justify-between bg-surface/90 px-4 py-3"><span class="font-mono text-xs text-primaryText">กล้อง 02 - ตรวจสอบผ่าน</span><span class="rounded bg-danger px-2 py-1 font-mono text-xs">หยุดการตรวจสอบ</span></div><div class="grid h-full place-items-center bg-[radial-gradient(circle_at_center,_#4b3021,_#0e0e11_65%)]"><div class="relative h-56 w-56 rounded-full border-8 border-white/20 bg-gradient-to-br from-amber-200 via-orange-700 to-red-950 shadow-2xl"><div class="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-yellow-300"></div><span class="absolute right-2 top-6 rounded bg-danger px-2 py-1 font-mono text-xs">ผักชี 99.8%</span></div></div><div class="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-danger px-4 py-2 font-mono text-xs font-bold">ตรวจพบข้อผิดพลาด</div></div><div class="rounded-xl border-l-4 border-danger bg-elevated p-5 lg:col-span-3"><div class="flex items-center gap-3 text-danger"><span class="material-symbols-outlined text-4xl">cancel</span><h3 class="text-xl font-bold">ตรวจสอบไม่ผ่าน</h3></div><p class="mt-5 text-sm leading-6">พบวัตถุดิบต้องห้ามที่มองเห็นได้ตรงกับรายการที่ยกเว้น</p><div class="mt-4 flex justify-between text-sm"><span class="text-primaryText">เป้าหมาย: ผักชี</span><span class="text-muted">ความมั่นใจ 99.8%</span></div><button class="mt-6 w-full rounded-lg bg-danger px-4 py-3 font-bold text-white" id="returnButton">ส่งกลับครัวเพื่อแก้ไข</button><button class="mt-2 w-full cursor-not-allowed rounded-lg border border-stroke px-4 py-3 text-sm text-muted opacity-50">เสิร์ฟอาหาร</button></div></div></main><div class="fixed bottom-5 left-1/2 hidden -translate-x-1/2 rounded-lg border border-danger/40 bg-elevated px-4 py-3 text-sm text-danger shadow-xl" id="toast"></div><script>document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('mobileNav').classList.toggle('hidden'));const params=new URLSearchParams(window.location.search);const table=params.get('table');if(table){document.querySelector('main h3').textContent=table;}document.getElementById('returnButton').addEventListener('click',()=>{const t=document.getElementById('toast');t.textContent='ส่งออเดอร์กลับไปยังสถานีผัดแล้ว';t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2600)});</script></body></html>
+  <header class="sticky top-0 z-40 border-b border-stroke bg-background/95 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6">
+      <a href="index.html" class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-3xl text-primary">restaurant</span>
+        <div>
+          <h1 class="font-mono text-lg font-bold tracking-tight text-primaryText">KitchenPulse AI</h1>
+          <p class="hidden font-mono text-[10px] uppercase tracking-widest text-muted sm:block">Smart kitchen operating system</p>
+        </div>
+      </a>
+      <nav class="hidden items-center gap-1 lg:flex" aria-label="เมนูหลัก">
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="index.html">กระดานครัวสด</a>
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
+        <a class="rounded-lg bg-primary/20 px-3 py-2 text-sm font-semibold text-primaryText" href="qc.html">AI QC ประตูตรวจ</a>
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="analytics.html">การวิเคราะห์</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <span class="hidden rounded-full border border-success/40 bg-success/10 px-3 py-1 font-mono text-xs text-success sm:inline-flex">● ระบบปกติ</span>
+        <button class="rounded-lg border border-stroke px-3 py-2 text-muted lg:hidden" id="menuButton">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+      </div>
+    </div>
+    <nav class="hidden border-t border-stroke bg-surface p-3 lg:hidden" id="mobileNav">
+      <div class="grid grid-cols-2 gap-2">
+        <a class="rounded-lg p-2 text-sm text-muted" href="index.html">กระดานครัวสด</a>
+        <a class="rounded-lg p-2 text-sm text-muted" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
+        <a class="rounded-lg bg-primary/20 p-2 text-sm text-primaryText" href="qc.html">AI QC</a>
+        <a class="rounded-lg p-2 text-sm text-muted" href="analytics.html">การวิเคราะห์</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6">
+    <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-widest text-primaryText">TrustPlate vision</p>
+        <h2 class="mt-2 text-3xl font-bold">AI QC ประตูตรวจ</h2>
+        <p class="mt-1 text-muted">ตรวจสอบอาหารก่อนเสิร์ฟด้วย Computer Vision</p>
+      </div>
+      <div class="flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 px-3 py-2 font-mono text-xs text-success">
+        <span class="h-2 w-2 animate-pulse rounded-full bg-success"></span>
+        พร้อมตรวจสอบ
+      </div>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-12">
+      <section class="rounded-xl border border-stroke bg-elevated p-5 lg:col-span-4">
+        <div class="flex items-center gap-3 border-b border-stroke pb-4">
+          <span class="material-symbols-outlined text-3xl text-primary">fact_check</span>
+          <div>
+            <h3 class="text-lg font-bold">ข้อมูลออเดอร์</h3>
+            <p class="font-mono text-xs text-muted">ก่อนส่งเข้าด่านตรวจ</p>
+          </div>
+        </div>
+
+        <label class="mt-5 block text-sm font-semibold text-muted" for="order">รายการอาหาร</label>
+        <select id="order" class="mt-2 w-full rounded-lg border border-stroke bg-surface px-3 py-3 text-sm text-ink outline-none focus:border-primary">
+          <option>ข้าวกะเพราหมูสับ — ไม่ใส่ผักชี, เพิ่มไข่ดาว</option>
+          <option>ต้มยำกุ้งน้ำข้น — เผ็ดน้อย</option>
+          <option>ข้าวผัดไก่ — ไม่ใส่หอมใหญ่</option>
+        </select>
+
+        <div class="mt-4 rounded-lg border border-stroke bg-surface p-3">
+          <p class="flex items-center gap-2 text-sm font-bold text-danger"><span class="material-symbols-outlined text-base">warning</span>ไม่ใส่ผักชี</p>
+          <p class="mt-2 flex items-center gap-2 text-sm text-success"><span class="material-symbols-outlined text-base">add_circle</span>เพิ่มไข่ดาว</p>
+        </div>
+
+        <label class="mt-5 block text-sm font-semibold text-muted" for="prompt">Prompt สำหรับ AI</label>
+        <textarea id="prompt" class="mt-2 min-h-28 w-full resize-y rounded-lg border border-stroke bg-surface px-3 py-3 text-sm leading-6 text-ink outline-none focus:border-primary">ตรวจสอบว่าจานอาหารตรงตามออเดอร์หรือไม่ มีส่วนประกอบครบตามที่ระบุหรือไม่ และมีส่วนผสมที่ห้ามใส่หรือไม่ ให้สรุปผล PASS หรือ FAIL พร้อมเหตุผลภาษาไทย</textarea>
+
+        <div class="mt-5 rounded-lg border border-dashed border-stroke bg-surface p-4 text-center">
+          <span class="material-symbols-outlined text-4xl text-primaryText">cloud_upload</span>
+          <p class="mt-2 text-sm font-semibold">อัปโหลดรูปอาหาร</p>
+          <p class="mt-1 text-xs text-muted">เลือกได้ไม่เกิน 1 รูป · JPG, PNG, WEBP · ไม่เกิน 10 MB</p>
+          <label for="image" class="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stroke bg-high px-4 py-2 text-sm font-bold text-ink hover:border-primary hover:text-primaryText">
+            <span class="material-symbols-outlined text-base">upload_file</span>
+            เลือกไฟล์
+          </label>
+          <input id="image" type="file" accept="image/*" class="hidden" />
+          <p id="fileName" class="mt-3 hidden truncate text-xs text-primaryText"></p>
+        </div>
+
+        <button id="generate" disabled class="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-bold text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50">
+          <span class="material-symbols-outlined text-base">verified</span>
+          ตรวจสอบจานอาหาร
+        </button>
+        <p id="status" class="mt-3 min-h-5 text-xs text-muted">กรุณาอัปโหลดรูปอาหารเพื่อเริ่มตรวจสอบ</p>
+      </section>
+
+      <section class="rounded-xl border border-stroke bg-elevated p-5 lg:col-span-8">
+        <div class="flex items-center justify-between border-b border-stroke pb-4">
+          <div>
+            <h3 class="text-lg font-bold">ผลการตรวจสอบ</h3>
+            <p class="font-mono text-xs text-muted">TrustPlate AI QC Result</p>
+          </div>
+          <span class="rounded bg-high px-2 py-1 font-mono text-xs text-muted">รอผลลัพธ์</span>
+        </div>
+        <div id="result" class="file-preview grid place-items-center py-6 text-center text-muted">
+          <div>
+            <span class="material-symbols-outlined text-6xl text-stroke">image_search</span>
+            <p class="mt-3">อัปโหลดรูปอาหาร แล้วกด “ตรวจสอบจานอาหาร”</p>
+            <p class="mt-1 text-xs">ผล PASS / FAIL และรายละเอียดจะแสดงที่นี่</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2 rounded-lg border border-success/40 bg-elevated px-4 py-3 text-sm text-success shadow-xl"></div>
+
+  <script>
+    const BASE_URL = "https://itmsuhackathon.askme.co.th";
+    const MODEL_ID = "gemini-3.1-flash-image-preview";
+    const TEST_EMAIL = "67011212047@msu.ac.th";
+    const TEST_PASSWORD = "Phone@1324";
+    let accessToken = "";
+    let sessionId = "";
+    let objectUrl = "";
+
+    const imageInput = document.getElementById("image");
+    const fileName = document.getElementById("fileName");
+    const generateButton = document.getElementById("generate");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+
+    function errorMessage(data, fallback) {
+      if (data?.error && typeof data.error === "object") return data.error.message || data.error.code || fallback;
+      return data?.message || (typeof data?.error === "string" ? data.error : fallback);
+    }
+
+    async function readApiResponse(response) {
+      const text = await response.text();
+      if (!text) return {};
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { message: text.slice(0, 500) };
+      }
+    }
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.className = `mt-3 min-h-5 text-xs ${isError ? "text-danger" : "text-muted"}`;
+    }
+
+    async function login() {
+      const response = await fetch(`${BASE_URL}/api/v1/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: TEST_EMAIL, password: TEST_PASSWORD })
+      });
+      const data = await readApiResponse(response);
+      if (!response.ok) throw new Error(errorMessage(data, `Login failed (${response.status})`));
+      if (data.mfa_required) throw new Error("บัญชีนี้ต้องยืนยัน MFA ก่อนใช้งาน");
+      accessToken = data.access_token || data.token || data.data?.access_token;
+      if (!accessToken) throw new Error("ไม่พบ access token จากระบบ Login");
+    }
+
+    async function createSession() {
+      const response = await fetch(`${BASE_URL}/api/v1/chat/sessions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}`, "X-Client-Type": "web" },
+        body: JSON.stringify({ model_id: MODEL_ID })
+      });
+      const data = await readApiResponse(response);
+      if (!response.ok) throw new Error(errorMessage(data, `สร้าง session ไม่สำเร็จ (${response.status})`));
+      sessionId = data.id || data.session_id || data.data?.id || data.data?.session_id;
+      if (!sessionId) throw new Error("ไม่พบ session id");
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function buildFileUrl(pathOrUrl) {
+      if (!pathOrUrl) return null;
+      if (/^https?:\/\//i.test(pathOrUrl)) {
+        if (pathOrUrl.includes("/api/v1/chat/files/")) return pathOrUrl;
+        return `${BASE_URL}/api/v1/chat/files/${pathOrUrl.replace(/^https?:\/\/[^/]+\/?/, "")}`;
+      }
+      if (pathOrUrl.startsWith("/api/v1/chat/files/")) return `${BASE_URL}${pathOrUrl}`;
+      if (pathOrUrl.startsWith("/")) return `${BASE_URL}${pathOrUrl}`;
+      return `${BASE_URL}/api/v1/chat/files/${pathOrUrl.replace(/^\/+/, "")}`;
+    }
+
+    function findImagePath(data) {
+      const candidates = [data?.url, data?.image_url, data?.file_url, data?.path, data?.data?.url, data?.data?.image_url, data?.data?.path, data?.images?.[0]?.url, data?.data?.images?.[0]?.url];
+      return candidates.find(value => typeof value === "string" && value.length > 0);
+    }
+
+    async function displayProtectedImage(path) {
+      const url = buildFileUrl(path);
+      if (!url) return null;
+      const response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}`, Accept: "*/*" } });
+      if (!response.ok) throw new Error(`โหลดภาพผลลัพธ์ไม่สำเร็จ (${response.status})`);
+      const blob = await response.blob();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      objectUrl = URL.createObjectURL(blob);
+      return { url, displayUrl: objectUrl };
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
+    }
+
+    function renderResult(result, image) {
+      const status = String(result.status || result.verdict || "FAIL").toUpperCase() === "PASS" ? "PASS" : "FAIL";
+      const statusColor = status === "PASS" ? "success" : "danger";
+      const issues = Array.isArray(result.detected_issues) ? result.detected_issues : (Array.isArray(result.issues) ? result.issues : []);
+      resultEl.className = "file-preview py-6";
+      resultEl.innerHTML = `<div class="grid gap-5 lg:grid-cols-2"><div class="overflow-hidden rounded-lg border border-stroke bg-surface p-3">${image ? `<img class="max-h-[340px] w-full rounded object-contain" src="${image.displayUrl}" alt="ภาพผลการตรวจสอบ"><p class="mt-2 break-all text-[10px] text-primaryText">${escapeHtml(image.url)}</p>` : `<div class="grid min-h-[260px] place-items-center text-muted">ไม่พบภาพผลลัพธ์จากโมเดล</div>`}</div><div class="rounded-lg border-l-4 border-${statusColor} bg-surface p-5"><div class="flex items-center gap-3 text-${statusColor}"><span class="material-symbols-outlined text-4xl">${status === "PASS" ? "check_circle" : "cancel"}</span><div><h3 class="text-2xl font-bold">${status === "PASS" ? "ตรวจสอบผ่าน" : "ตรวจสอบไม่ผ่าน"}</h3><p class="font-mono text-xs">${status === "PASS" ? "พร้อมเสิร์ฟ" : "ล็อกการเสิร์ฟ"}</p></div></div><div class="mt-5 rounded-lg border border-stroke bg-elevated p-4"><p class="text-sm leading-6">${escapeHtml(result.reasoning || result.reason || "ระบบไม่สามารถสรุปเหตุผลได้")}</p><p class="mt-4 text-sm text-muted">ความมั่นใจ: <strong class="text-primaryText">${escapeHtml(result.confidence ?? "ไม่ระบุ")}</strong></p>${issues.length ? `<ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-danger">${issues.map(issue => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>` : ""}</div></div></div>`;
+    }
+
+    async function generate() {
+      if (!imageInput.files.length) return setStatus("กรุณาอัปโหลดรูปอาหาร 1 รูปก่อนตรวจสอบ", true);
+      const file = imageInput.files[0];
+      if (file.size > 10 * 1024 * 1024) return setStatus("ไฟล์ต้องมีขนาดไม่เกิน 10 MB", true);
+      generateButton.disabled = true;
+      resultEl.innerHTML = `<div class="grid min-h-[300px] place-items-center text-primaryText"><div><span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span><p class="mt-3">กำลังตรวจสอบภาพอาหาร...</p></div></div>`;
+      try {
+        if (!accessToken) { setStatus("กำลังเข้าสู่ระบบ...", false); await login(); }
+        if (!sessionId) { setStatus("กำลังเตรียม AI session...", false); await createSession(); }
+        setStatus("กำลังวิเคราะห์ภาพอาหาร...", false);
+        const response = await fetch(`${BASE_URL}/api/v1/chat/sessions/${sessionId}/images/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}`, "X-Client-Type": "web" },
+          body: JSON.stringify({ prompt: document.getElementById("prompt").value, size: "768x1344", model_id: MODEL_ID, input_images: [await fileToBase64(file)] })
+        });
+        const data = await readApiResponse(response);
+        if (!response.ok) throw new Error(errorMessage(data, `AI ตรวจสอบไม่สำเร็จ (${response.status})`));
+        const imagePath = findImagePath(data);
+        const image = imagePath ? await displayProtectedImage(imagePath) : null;
+        let parsed = data.result || data.analysis || data.data?.result || data.data?.analysis;
+        if (!parsed && data.text) parsed = data.text;
+        if (!parsed && data.content) parsed = data.content;
+        if (typeof parsed === "string") { try { parsed = JSON.parse(parsed); } catch { parsed = { status: "PASS", reasoning: parsed }; } }
+        renderResult(parsed || { status: "PASS", confidence: "ผลลัพธ์จากโมเดล", reasoning: "โมเดลตรวจสอบภาพสำเร็จ กรุณาตรวจรายละเอียดตาม prompt" }, image);
+        setStatus("ตรวจสอบเสร็จแล้ว");
+      } catch (error) {
+        resultEl.innerHTML = `<div class="grid min-h-[300px] place-items-center text-danger"><div><span class="material-symbols-outlined text-5xl">error</span><p class="mt-3">เกิดข้อผิดพลาดระหว่างตรวจสอบ</p></div></div>`;
+        setStatus(error.message, true);
+      } finally {
+        generateButton.disabled = false;
+      }
+    }
+
+    imageInput.addEventListener("change", () => {
+      const file = imageInput.files[0];
+      if (!file) return;
+      fileName.textContent = file.name;
+      fileName.classList.remove("hidden");
+      generateButton.disabled = false;
+      setStatus("พร้อมตรวจสอบ กดปุ่ม “ตรวจสอบจานอาหาร”");
+    });
+    generateButton.addEventListener("click", generate);
+    document.getElementById("menuButton").addEventListener("click", () => document.getElementById("mobileNav").classList.toggle("hidden"));
+  </script>
+</body>
+</html>
