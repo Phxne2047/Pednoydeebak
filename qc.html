@@ -289,12 +289,26 @@
       return { url, displayUrl: objectUrl };
     }
 
-    function renderResult(result, image) {
-      const status = String(result.status || result.verdict || "FAIL").toUpperCase() === "PASS" ? "PASS" : "FAIL";
-      const statusColor = status === "PASS" ? "success" : "danger";
-      const issues = Array.isArray(result.detected_issues) ? result.detected_issues : (Array.isArray(result.issues) ? result.issues : []);
-      resultEl.className = "file-preview py-6";
-      resultEl.innerHTML = `<div class="grid gap-5 lg:grid-cols-2"><div class="overflow-hidden rounded-lg border border-stroke bg-surface p-3">${image ? `<img class="max-h-[340px] w-full rounded object-contain" src="${image.displayUrl}" alt="ภาพผลการตรวจสอบ"><p class="mt-2 break-all text-[10px] text-primaryText">${escapeHtml(image.url)}</p>` : `<div class="grid min-h-[260px] place-items-center text-muted">ไม่พบภาพผลลัพธ์จากโมเดล</div>`}</div><div class="rounded-lg border-l-4 border-${statusColor} bg-surface p-5"><div class="flex items-center gap-3 text-${statusColor}"><span class="material-symbols-outlined text-4xl">${status === "PASS" ? "check_circle" : "cancel"}</span><div><h3 class="text-2xl font-bold">${status === "PASS" ? "ตรวจสอบผ่าน" : "ตรวจสอบไม่ผ่าน"}</h3><p class="font-mono text-xs">${status === "PASS" ? "พร้อมเสิร์ฟ" : "ล็อกการเสิร์ฟ"}</p></div></div><div class="mt-5 rounded-lg border border-stroke bg-elevated p-4"><p class="text-sm leading-6">${escapeHtml(result.reasoning || result.reason || "ระบบไม่สามารถสรุปเหตุผลได้")}</p><p class="mt-4 text-sm text-muted">ความมั่นใจ: <strong class="text-primaryText">${escapeHtml(result.confidence ?? "ไม่ระบุ")}</strong></p>${issues.length ? `<ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-danger">${issues.map(issue => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>` : ""}</div></div></div>`;
+    function renderResult(image) {
+      resultEl.className = "file-preview grid place-items-center py-6";
+      resultEl.innerHTML = image
+        ? `
+          <div class="w-full overflow-hidden rounded-lg border border-stroke bg-surface p-3">
+            <img
+              class="mx-auto max-h-[720px] w-full rounded object-contain"
+              src="${image.displayUrl}"
+              alt="ภาพผลการตรวจสอบที่ AI สร้าง"
+            />
+          </div>
+        `
+        : `
+          <div class="grid min-h-[300px] place-items-center text-muted">
+            <div>
+              <span class="material-symbols-outlined text-5xl">broken_image</span>
+              <p class="mt-3">ไม่พบภาพผลลัพธ์จาก AI</p>
+            </div>
+          </div>
+        `;
     }
 
     async function generate() {
@@ -316,12 +330,8 @@
         if (!response.ok) throw new Error(errorMessage(data, `AI ตรวจสอบไม่สำเร็จ (${response.status})`));
         const imagePath = findImagePath(data);
         const image = imagePath ? await displayProtectedImage(imagePath) : null;
-        let parsed = data.result || data.analysis || data.data?.result || data.data?.analysis;
-        if (!parsed && data.text) parsed = data.text;
-        if (!parsed && data.content) parsed = data.content;
-        if (typeof parsed === "string") { try { parsed = JSON.parse(parsed); } catch { parsed = { status: "PASS", reasoning: parsed }; } }
-        renderResult(parsed || { status: "PASS", confidence: "ผลลัพธ์จากโมเดล", reasoning: "โมเดลตรวจสอบภาพสำเร็จ กรุณาตรวจรายละเอียดตาม prompt" }, image);
-        setStatus("ตรวจสอบเสร็จแล้ว");
+        renderResult(image);
+        setStatus(image ? "ตรวจสอบเสร็จแล้ว" : "ตรวจสอบเสร็จแล้ว แต่ AI ไม่ได้ส่งภาพกลับมา", !image);
       } catch (error) {
         resultEl.innerHTML = `<div class="grid min-h-[300px] place-items-center text-danger"><div><span class="material-symbols-outlined text-5xl">error</span><p class="mt-3">เกิดข้อผิดพลาดระหว่างตรวจสอบ</p></div></div>`;
         setStatus(error.message, true);
