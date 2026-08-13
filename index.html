@@ -141,18 +141,42 @@
 
   <div class="pointer-events-none fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2 rounded-lg border border-success/40 bg-elevated px-4 py-3 text-sm shadow-xl" id="toast"></div>
 
+  <div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4" id="orderModal" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+    <form class="w-full max-w-2xl rounded-2xl border border-stroke bg-surface shadow-2xl" id="orderForm">
+      <div class="flex items-start justify-between border-b border-stroke px-5 py-4">
+        <div><p class="font-mono text-xs uppercase tracking-widest text-primaryText">New order intake</p><h2 class="mt-1 text-2xl font-bold" id="orderModalTitle">เพิ่มออเดอร์ใหม่</h2></div>
+        <button type="button" class="rounded-lg p-2 text-muted hover:bg-high hover:text-ink" id="closeOrderModal" aria-label="ปิด"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="grid gap-4 px-5 py-5 sm:grid-cols-2">
+        <label class="text-sm font-semibold">รหัสออเดอร์<input class="mt-2 w-full rounded-lg border border-stroke bg-elevated px-3 py-3 text-ink outline-none focus:border-primary" name="id" placeholder="MSU-1009" required /></label>
+        <label class="text-sm font-semibold">โต๊ะ / ลูกค้า<input class="mt-2 w-full rounded-lg border border-stroke bg-elevated px-3 py-3 text-ink outline-none focus:border-primary" name="customer" placeholder="โต๊ะ 10" required /></label>
+        <label class="text-sm font-semibold sm:col-span-2">เมนู<input class="mt-2 w-full rounded-lg border border-stroke bg-elevated px-3 py-3 text-ink outline-none focus:border-primary" name="menu" placeholder="เช่น กะเพราหมูสับไข่ดาว" required /></label>
+        <label class="text-sm font-semibold">หมวดหมู่<select class="mt-2 w-full rounded-lg border border-stroke bg-elevated px-3 py-3 text-ink outline-none focus:border-primary" name="category" required><option value="ผัด">ผัด</option><option value="ทอด">ทอด</option><option value="ต้ม">ต้ม</option><option value="ยำ">ยำ</option><option value="อื่นๆ">อื่นๆ</option></select></label>
+        <label class="text-sm font-semibold">เวลาปรุง (นาที)<input class="mt-2 w-full rounded-lg border border-stroke bg-elevated px-3 py-3 text-ink outline-none focus:border-primary" name="cookTimeMinutes" type="number" min="1" max="999" placeholder="10" required /></label>
+        <label class="text-sm font-semibold sm:col-span-2">คำขอพิเศษ / ข้อแพ้<textarea class="mt-2 min-h-24 w-full rounded-lg border border-stroke bg-elevated px-3 py-3 text-ink outline-none focus:border-primary" name="specialRequest" placeholder="เช่น ไม่ใส่ผักชี"></textarea></label>
+        <label class="text-sm font-semibold">สถานะ<select class="mt-2 w-full rounded-lg border border-stroke bg-elevated px-3 py-3 text-ink outline-none focus:border-primary" name="status" required><option value="new">ออเดอร์ใหม่</option><option value="cooking">กำลังปรุง</option><option value="qc">พร้อมสำหรับ QC</option><option value="done">เสิร์ฟแล้ว</option></select></label>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-stroke px-5 py-4"><button type="button" class="rounded-lg border border-stroke px-4 py-2 text-sm text-muted hover:bg-high" id="cancelOrder">ยกเลิก</button><button type="submit" class="rounded-lg bg-primary px-5 py-2 text-sm font-bold text-white hover:brightness-110">บันทึกออเดอร์</button></div>
+    </form>
+  </div>
+
   <script>
-    const orders = [
-      { table: 'โต๊ะ 3 - #008', age: '2น. ที่แล้ว', sla: '15:00', status: 'new', items: ['2x ผัดไทย', '1x ปอเปี๊ยะ'] },
-      { table: 'โต๊ะ 5 - #009', age: '8น. ที่แล้ว', sla: '04:30', status: 'cooking', tag: '[ผัด]', items: ['1x แกงเขียวหวาน'], note: 'ไม่ใส่ผักชี (แพ้รุนแรง)' },
-      { table: 'โต๊ะ 8 - #010', age: '6น. ที่แล้ว', sla: '07:10', status: 'cooking', tag: '[ทอด]', items: ['1x ไก่ทอด', '1x ข้าวเหนียว'] },
-      { table: 'โต๊ะ 2 - #011', age: '4น. ที่แล้ว', sla: '10:45', status: 'cooking', tag: '[ต้ม]', items: ['2x ต้มยำกุ้ง'] },
-      { table: 'โต๊ะ 7 - #012', age: '12น. ที่แล้ว', sla: '02:20', status: 'cooking', tag: '[ผัด]', items: ['1x กะเพราหมู'], note: 'ไม่ใส่พริก' },
-      { table: 'โต๊ะ 1 - #013', age: '15น. ที่แล้ว', sla: 'ตรวจแล้ว', status: 'qc', items: ['1x ข้าวผัดปู'] },
-      { table: 'โต๊ะ 4 - #014', age: '17น. ที่แล้ว', sla: 'ตรวจแล้ว', status: 'qc', items: ['2x ผัดซีอิ๊ว'] },
-      { table: 'โต๊ะ 6 - #007', age: '22น. ที่แล้ว', sla: 'เสิร์ฟแล้ว', status: 'done', items: ['1x ลาบหมู'] },
-      { table: 'โต๊ะ 9 - #006', age: '25น. ที่แล้ว', sla: 'เสิร์ฟแล้ว', status: 'done', items: ['1x ข้าวมันไก่'] }
-    ];
+    let orders = [];
+
+    async function loadOrders() {
+      const response = await fetch('data/mock-orders.json');
+      if (!response.ok) throw new Error('โหลดข้อมูลออเดอร์ไม่สำเร็จ');
+      const data = await response.json();
+      orders = data.orders.map(order => ({
+        table: `${order.customer} - #${order.id.slice(-3)}`,
+        age: 'ข้อมูลล่าสุด',
+        sla: `${String(order.cookTimeMinutes).padStart(2, '0')}:00`,
+        status: order.status,
+        tag: `[${order.category}]`,
+        items: [`1x ${order.menu}`],
+        note: order.specialRequest
+      }));
+    }
 
     const columns = {
       new: { title: 'ออเดอร์ใหม่', icon: 'inbox', color: 'text-ink' },
@@ -219,12 +243,44 @@
 
     document.getElementById('menuButton').addEventListener('click', () => document.getElementById('mobileNav').classList.toggle('hidden'));
     document.getElementById('refreshButton').addEventListener('click', () => { renderBoard(); showToast('อัปเดตข้อมูลเรียบร้อยแล้ว'); });
-    document.getElementById('newOrderButton').addEventListener('click', () => showToast('ฟอร์มสร้างออเดอร์พร้อมใช้งานในเวอร์ชันถัดไป'));
+    const orderModal = document.getElementById('orderModal');
+    const orderForm = document.getElementById('orderForm');
+    function closeOrderModal() {
+      orderModal.classList.add('hidden');
+      orderModal.classList.remove('flex');
+    }
+    document.getElementById('newOrderButton').addEventListener('click', () => {
+      orderForm.reset();
+      orderForm.elements.id.value = `MSU-${1001 + orders.length}`;
+      orderModal.classList.remove('hidden');
+      orderModal.classList.add('flex');
+      orderForm.elements.customer.focus();
+    });
+    document.getElementById('closeOrderModal').addEventListener('click', closeOrderModal);
+    document.getElementById('cancelOrder').addEventListener('click', closeOrderModal);
+    orderModal.addEventListener('click', event => { if (event.target === orderModal) closeOrderModal(); });
+    orderForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(orderForm));
+      const cookTime = Number(data.cookTimeMinutes);
+      orders.unshift({
+        table: `${data.customer} - #${data.id.slice(-3)}`,
+        age: 'เมื่อสักครู่',
+        sla: `${String(cookTime).padStart(2, '0')}:00`,
+        status: data.status,
+        tag: `[${data.category}]`,
+        items: [`1x ${data.menu}`],
+        note: data.specialRequest
+      });
+      renderBoard();
+      closeOrderModal();
+      showToast('เพิ่มออเดอร์ใหม่แล้ว (ข้อมูลจะถูกบันทึกใน JSON เมื่อใช้เซิร์ฟเวอร์ API)');
+    });
     document.getElementById('optimizerButton').addEventListener('click', event => { event.target.textContent = 'กำลังปรับคิวด้วย AI...'; setTimeout(() => { event.target.textContent = 'เรียกใช้ AI Queue Optimizer'; showToast('ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%'); }, 1000); });
     document.getElementById('returnButton').addEventListener('click', () => showToast('ส่งออเดอร์กลับไปยังสถานีผัดแล้ว', false));
     document.getElementById('exportButton').addEventListener('click', () => showToast('สร้างรายงานพร้อมดาวน์โหลดแล้ว'));
 
-    renderBoard();
+    loadOrders().then(renderBoard).catch(error => showToast(error.message, false));
   </script>
 </body>
 </html>
