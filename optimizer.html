@@ -6,9 +6,153 @@
   <title>KitchenPulse AI - เพิ่มประสิทธิภาพ</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet" />
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{background:'#131316',surface:'#1f1f22',elevated:'#27272a',high:'#2a2a2d',stroke:'#3f3f46',muted:'#e0c0b1',ink:'#e4e1e6',primary:'#f97316',primaryText:'#ffb690',warning:'#f59e0b',success:'#10b981',danger:'#ef4444'},fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']}}}};</script>
-  <style>*{box-sizing:border-box}.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#131316', surface: '#1f1f22', elevated: '#27272a', high: '#2a2a2d', stroke: '#3f3f46', muted: '#e0c0b1', ink: '#e4e1e6', primary: '#f97316', primaryText: '#ffb690', warning: '#f59e0b', success: '#10b981', danger: '#ef4444'
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  </style>
 </head>
-<body class="bg-background text-ink font-sans">
-  <header class="sticky top-0 z-40 border-b border-stroke bg-background/95 backdrop-blur"><div class="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6"><a href="index.html" class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl text-primary">restaurant</span><div><h1 class="font-mono text-lg font-bold text-primaryText">KitchenPulse AI</h1><p class="hidden font-mono text-[10px] uppercase tracking-widest text-muted sm:block">Smart kitchen operating system</p></div></a><nav class="hidden items-center gap-1 lg:flex"><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="index.html">กระดานครัวสด</a><a class="rounded-lg bg-primary/20 px-3 py-2 text-sm font-semibold text-primaryText" href="optimizer.html">เพิ่มประสิทธิภาพ</a><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="qc.html">AI QC ประตูตรวจ</a><a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="analytics.html">การวิเคราะห์</a></nav><div class="flex items-center gap-2"><span class="hidden rounded-full border border-success/40 bg-success/10 px-3 py-1 font-mono text-xs text-success sm:inline-flex">● ระบบปกติ</span><button class="rounded-lg border border-stroke px-3 py-2 text-muted lg:hidden" id="menuButton"><span class="material-symbols-outlined">menu</span></button></div></div><nav class="hidden border-t border-stroke bg-surface p-3 lg:hidden" id="mobileNav"><div class="grid grid-cols-2 gap-2"><a class="rounded-lg p-2 text-sm text-muted" href="index.html">หน้าแรก</a><a class="rounded-lg p-2 text-sm text-muted" href="index.html">กระดานครัวสด</a><a class="rounded-lg bg-primary/20 p-2 text-sm text-primaryText" href="optimizer.html">เพิ่มประสิทธิภาพ</a><a class="rounded-lg p-2 text-sm text-muted" href="qc.html">AI QC</a><a class="rounded-lg p-2 text-sm text-muted" href="analytics.html">การวิเคราะห์</a></div></nav></header>
-  <main class="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6"><div><p class="font-mono text-xs uppercase tracking-widest text-primaryText">AI operations</p><h2 class="mt-2 text-3xl font-bold">เพิ่มประสิทธิภาพปัญหาคอขวด</h2><p class="mt-1 text-muted">วิเคราะห์ภาระงานและปรับคิวให้ครัวทำงานได้เร็วขึ้น</p></div><div class="grid gap-4 md:grid-cols-3"><div class="rounded-xl border border-danger/60 bg-danger/10 p-5"><div class="flex justify-between"><h3 class="font-mono font-bold">สถานีผัด</h3><span class="rounded bg-danger px-2 py-1 font-mono text-xs">โอเวอร์โหลด</span></div><p class="mt-6 text-5xl font-bold text-danger">5</p><p class="mt-1 text-sm text-muted">คำสั่งซื้อที่รอดำเนินการ</p><div class="mt-5 h-2 rounded-full bg-stroke"><div class="h-full w-[95%] rounded-full bg-danger"></div></div></div><div class="rounded-xl border border-warning/40 bg-elevated p-5"><div class="flex justify-between"><h3 class="font-mono font-bold">สถานีทอด</h3><span class="rounded bg-warning px-2 py-1 font-mono text-xs text-black">ปานกลาง</span></div><p class="mt-6 text-5xl font-bold text-warning">3</p><p class="mt-1 text-sm text-muted">คำสั่งซื้อที่รอดำเนินการ</p><div class="mt-5 h-2 rounded-full bg-stroke"><div class="h-full w-[60%] rounded-full bg-warning"></div></div></div><div class="rounded-xl border border-success/40 bg-elevated p-5"><div class="flex justify-between"><h3 class="font-mono font-bold">สถานีต้ม</h3><span class="rounded bg-success px-2 py-1 font-mono text-xs text-black">ปกติ</span></div><p class="mt-6 text-5xl font-bold text-success">1</p><p class="mt-1 text-sm text-muted">คำสั่งซื้อที่รอดำเนินการ</p><div class="mt-5 h-2 rounded-full bg-stroke"><div class="h-full w-1/4 rounded-full bg-success"></div></div></div></div><div class="grid gap-4 lg:grid-cols-3"><div class="rounded-xl border-2 border-primary bg-primary/10 p-6 lg:col-span-2"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl text-primary">smart_toy</span><h3 class="text-xl font-bold text-primaryText">ข้อมูลเชิงลึก AI</h3></div><p class="mt-4 border-l-4 border-danger pl-4 leading-7"><strong class="text-danger">คำเตือน:</strong> สถานีผัดทำงานหนักเกินไปจากออเดอร์กะเพราหมูพร้อมกันหลายรายการ</p><p class="mt-4 text-muted">ข้อเสนอแนะ: เตรียมซอสพื้นฐานแบบแบตช์สำหรับโต๊ะ 3, 5 และ 8 เพื่อลดเวลารอประมาณ 12 นาที</p><button class="mt-6 rounded-lg bg-primary px-5 py-3 font-bold text-white" id="optimizerButton">เรียกใช้ AI Queue Optimizer</button></div><div class="rounded-xl border border-stroke bg-elevated p-6"><h3 class="font-bold">ผลกระทบโดยประมาณ</h3><div class="mt-6 space-y-4"><div class="flex justify-between"><span class="text-muted">เวลารอคิว</span><b class="text-success">-28%</b></div><div class="flex justify-between"><span class="text-muted">การใช้สถานี</span><b class="text-primaryText">+18%</b></div></div></div></div></main><div class="fixed bottom-5 left-1/2 hidden -translate-x-1/2 rounded-lg border border-success/40 bg-elevated px-4 py-3 text-sm text-success shadow-xl" id="toast"></div><script>document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('mobileNav').classList.toggle('hidden'));document.getElementById('optimizerButton').addEventListener('click',e=>{e.textContent='กำลังปรับคิวด้วย AI...';setTimeout(()=>{e.textContent='เรียกใช้ AI Queue Optimizer';const t=document.getElementById('toast');t.textContent='ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%';t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2600)},1000)});</script></body></html>
+<body class="bg-background font-sans text-ink">
+  <header class="sticky top-0 z-40 border-b border-stroke bg-background/95 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6">
+      <a href="index.html" class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-3xl text-primary">restaurant</span>
+        <div>
+          <h1 class="font-mono text-lg font-bold text-primaryText">KitchenPulse AI</h1>
+          <p class="hidden font-mono text-[10px] uppercase tracking-widest text-muted sm:block">Smart kitchen operating system</p>
+        </div>
+      </a>
+      <nav class="hidden items-center gap-1 lg:flex">
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="index.html">กระดานครัวสด</a>
+        <a class="rounded-lg bg-primary/20 px-3 py-2 text-sm font-semibold text-primaryText" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="qc.html">AI QC ประตูตรวจ</a>
+        <a class="rounded-lg px-3 py-2 text-sm text-muted hover:bg-high" href="analytics.html">การวิเคราะห์</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <span class="hidden rounded-full border border-success/40 bg-success/10 px-3 py-1 font-mono text-xs text-success sm:inline-flex">● ระบบปกติ</span>
+        <button class="rounded-lg border border-stroke px-3 py-2 text-muted lg:hidden" id="menuButton"><span class="material-symbols-outlined">menu</span></button>
+      </div>
+    </div>
+    <nav class="hidden border-t border-stroke bg-surface p-3 lg:hidden" id="mobileNav">
+      <div class="grid grid-cols-2 gap-2">
+        <a class="rounded-lg p-2 text-sm text-muted" href="index.html">หน้าแรก</a>
+        <a class="rounded-lg p-2 text-sm text-muted" href="index.html">กระดานครัวสด</a>
+        <a class="rounded-lg bg-primary/20 p-2 text-sm text-primaryText" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
+        <a class="rounded-lg p-2 text-sm text-muted" href="qc.html">AI QC</a>
+        <a class="rounded-lg p-2 text-sm text-muted" href="analytics.html">การวิเคราะห์</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-[1440px] space-y-5 p-4 md:p-6">
+    <div>
+      <p class="font-mono text-xs uppercase tracking-widest text-primaryText">AI operations</p>
+      <h2 class="mt-2 text-3xl font-bold">เพิ่มประสิทธิภาพปัญหาคอขวด</h2>
+      <p class="mt-1 text-muted">วิเคราะห์ภาระงานและปรับคิวจากออเดอร์จริงในครัว</p>
+    </div>
+    <div class="grid gap-4 md:grid-cols-3" id="stationGrid"></div>
+    <div class="grid gap-4 lg:grid-cols-3">
+      <div class="rounded-xl border-2 border-primary bg-primary/10 p-6 lg:col-span-2">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-3xl text-primary">smart_toy</span>
+          <h3 class="text-xl font-bold text-primaryText">ข้อมูลเชิงลึก AI</h3>
+        </div>
+        <p class="mt-4 border-l-4 border-danger pl-4 leading-7" id="warningText">กำลังวิเคราะห์ข้อมูลออเดอร์...</p>
+        <p class="mt-4 text-muted" id="recommendationText">กำลังสร้างข้อเสนอแนะ...</p>
+        <button class="mt-6 rounded-lg bg-primary px-5 py-3 font-bold text-white" id="optimizerButton">เรียกใช้ AI Queue Optimizer</button>
+      </div>
+      <div class="rounded-xl border border-stroke bg-elevated p-6">
+        <h3 class="font-bold">ผลกระทบโดยประมาณ</h3>
+        <div class="mt-6 space-y-4">
+          <div class="flex justify-between"><span class="text-muted">เวลารอคิว</span><b class="text-success">-28%</b></div>
+          <div class="flex justify-between"><span class="text-muted">การใช้สถานี</span><b class="text-primaryText">+18%</b></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="fixed bottom-5 left-1/2 hidden -translate-x-1/2 rounded-lg border border-success/40 bg-elevated px-4 py-3 text-sm text-success shadow-xl" id="toast"></div>
+  <script>
+    const stationStyles = {
+      critical: { border: 'border-danger/60', background: 'bg-danger/10', badge: 'bg-danger', number: 'text-danger', bar: 'bg-danger', label: 'โอเวอร์โหลด' },
+      warning: { border: 'border-warning/40', background: 'bg-elevated', badge: 'bg-warning', number: 'text-warning', bar: 'bg-warning', label: 'ปานกลาง' },
+      normal: { border: 'border-success/40', background: 'bg-elevated', badge: 'bg-success', number: 'text-success', bar: 'bg-success', label: 'ปกติ' }
+    };
+
+    function getStationStatus(count) {
+      if (count > 3) return 'critical';
+      if (count >= 3) return 'warning';
+      return 'normal';
+    }
+
+    function renderStations(orders) {
+      const stations = {};
+      orders.filter(order => order.status === 'new' || order.status === 'cooking').forEach(order => {
+        stations[order.category] = (stations[order.category] || 0) + 1;
+      });
+
+      const stationGrid = document.getElementById('stationGrid');
+      stationGrid.innerHTML = Object.entries(stations).map(([name, count]) => {
+        const status = getStationStatus(count);
+        const style = stationStyles[status];
+        const percentage = Math.min(100, Math.round((count / 5) * 100));
+        return `<div class="rounded-xl border ${style.border} ${style.background} p-5">
+          <div class="flex justify-between gap-3"><h3 class="font-mono font-bold">สถานี${name}</h3><span class="rounded px-2 py-1 font-mono text-xs ${style.badge} ${status === 'warning' || status === 'normal' ? 'text-black' : ''}">${style.label}</span></div>
+          <p class="mt-6 text-5xl font-bold ${style.number}">${count}</p>
+          <p class="mt-1 text-sm text-muted">คำสั่งซื้อที่รอดำเนินการ</p>
+          <div class="mt-5 h-2 rounded-full bg-stroke"><div class="h-full rounded-full ${style.bar}" style="width: ${percentage}%"></div></div>
+        </div>`;
+      }).join('');
+
+      const critical = Object.entries(stations).filter(([, count]) => count > 3);
+      const [station, count] = critical[0] || Object.entries(stations).sort((a, b) => b[1] - a[1])[0] || ['-', 0];
+      const affectedTables = orders.filter(order => (order.status === 'new' || order.status === 'cooking') && order.category === station).map(order => order.customer).join(', ');
+      document.getElementById('warningText').innerHTML = count > 3
+        ? `<strong class="text-danger">คำเตือน:</strong> สถานี${station}ทำงานหนักเกินไป มี ${count} ออเดอร์ค้าง (${affectedTables})`
+        : `<strong class="text-success">สถานะปกติ:</strong> ยังไม่พบสถานีที่มีคอขวดรุนแรง`;
+      document.getElementById('recommendationText').textContent = count > 3
+        ? `ข้อเสนอแนะ: จัดกลุ่มเมนูสถานี${station} และกระจายคิว ${affectedTables} เพื่อลดเวลารอโดยประมาณ 12 นาที`
+        : 'ข้อเสนอแนะ: รักษาลำดับคิวปัจจุบันและติดตามภาระงานอย่างต่อเนื่อง';
+    }
+
+    async function loadOrders() {
+      try {
+        const response = await fetch('data/mock-orders.json');
+        if (!response.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
+        const data = await response.json();
+        renderStations(data.orders || []);
+      } catch (error) {
+        document.getElementById('warningText').innerHTML = '<strong class="text-danger">เกิดข้อผิดพลาด:</strong> ไม่สามารถโหลดข้อมูลออเดอร์ได้';
+        document.getElementById('recommendationText').textContent = 'กรุณาเปิดเว็บไซต์ผ่าน local server เพื่อให้ browser อ่านไฟล์ JSON ได้';
+      }
+    }
+
+    document.getElementById('menuButton').addEventListener('click', () => document.getElementById('mobileNav').classList.toggle('hidden'));
+    document.getElementById('optimizerButton').addEventListener('click', event => {
+      event.target.textContent = 'กำลังปรับคิวด้วย AI...';
+      event.target.disabled = true;
+      setTimeout(() => {
+        event.target.textContent = 'เรียกใช้ AI Queue Optimizer';
+        event.target.disabled = false;
+        const toast = document.getElementById('toast');
+        toast.textContent = 'ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%';
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2600);
+      }, 1000);
+    });
+    loadOrders();
+  </script>
+</body>
+</html>
