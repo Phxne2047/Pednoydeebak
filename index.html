@@ -164,16 +164,23 @@
     let orders = [];
 
     async function loadOrders() {
-      const response = await fetch('/api/orders').catch(() => fetch('data/mock-orders.json'));
+      const response = await fetch('data/mock-orders.json');
       if (!response.ok) throw new Error('โหลดข้อมูลออเดอร์ไม่สำเร็จ');
       const data = await response.json();
+      if (!Array.isArray(data.orders)) throw new Error('รูปแบบข้อมูลออเดอร์ไม่ถูกต้อง');
       orders = data.orders.map(order => ({
-        table: `${order.customer} - #${order.id.slice(-3)}`,
+        id: order.id || '',
+        customer: order.customer || 'ไม่ระบุโต๊ะ',
+        menu: order.menu || 'ไม่ระบุเมนู',
+        table: `${order.customer || 'ไม่ระบุโต๊ะ'} - #${String(order.id || '').slice(-3)}`, 
         age: 'ข้อมูลล่าสุด',
         sla: `${String(order.cookTimeMinutes).padStart(2, '0')}:00`,
-        status: order.status,
-        tag: `[${order.category}]`,
-        items: [`1x ${order.menu}`],
+        status: order.status || 'new',
+        tag: order.category ? `[${order.category}]` : '',
+        items: Array.isArray(order.items) && order.items.length
+          ? order.items
+          : [`1x ${order.menu}`],
+        category: order.category,
         note: order.specialRequest
       }));
     }
@@ -200,18 +207,29 @@
       document.getElementById('servedMetric').textContent = orders.filter(o => o.status === 'done').length;
     }
 
+    function escapeHtml(value = '') {
+      return String(value).replace(/[&<>'"]/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#039;',
+        '"': '&quot;'
+      }[character]));
+    }
+
     function orderCard(order) {
       const isDone = order.status === 'done';
       const isQc = order.status === 'qc';
       const bar = isDone ? 'bg-success' : isQc ? 'bg-warning' : order.sla.startsWith('0') ? 'bg-danger' : 'bg-primary';
-      return `<article class="order-card rounded-lg border border-stroke bg-elevated p-4" data-order="${order.table}">
-        <div class="flex items-start justify-between gap-2"><b class="font-mono text-sm ${isDone ? 'text-success' : 'text-primaryText'}">${order.table}</b><span class="font-mono text-[10px] text-muted">${order.age}</span></div>
+      const items = order.items.map(item => `<p>${escapeHtml(item)}</p>`).join('');
+      return `<article class="order-card rounded-lg border border-stroke bg-elevated p-4" data-order="${escapeHtml(order.table)}">
+        <div class="flex items-start justify-between gap-2"><b class="font-mono text-sm ${isDone ? 'text-success' : 'text-primaryText'}">${escapeHtml(order.table)}</b><span class="font-mono text-[10px] text-muted">${escapeHtml(order.age)}</span></div>
         <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-stroke"><div class="h-full w-3/4 rounded-full ${bar}"></div></div>
-        <div class="mt-2 flex justify-between font-mono text-[10px] ${isDone ? 'text-success' : isQc ? 'text-warning' : 'text-muted'}"><span>${isDone ? 'เสิร์ฟแล้ว' : isQc ? 'พร้อมตรวจ' : 'SLA'}</span><span>${order.sla}</span></div>
-        <div class="mt-3 space-y-1 border-t border-stroke pt-3 text-sm">${order.items.map(item => `<p>${item}</p>`).join('')}</div>
-        ${order.tag ? `<span class="mt-3 inline-block rounded border border-stroke bg-high px-2 py-1 font-mono text-[10px] text-muted">${order.tag}</span>` : ''}
-        ${order.note ? `<div class="mt-3 rounded bg-warning px-2 py-2 text-xs font-bold text-black"><span class="material-symbols-outlined mr-1 align-middle text-sm">priority_high</span>${order.note}</div>` : ''}
-        ${isQc ? `<button class="qc-action mt-4 w-full rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white" data-table="${order.table}">AI QC Check</button>` : ''}
+        <div class="mt-2 flex justify-between font-mono text-[10px] ${isDone ? 'text-success' : isQc ? 'text-warning' : 'text-muted'}"><span>${isDone ? 'เสิร์ฟแล้ว' : isQc ? 'พร้อมตรวจ' : 'SLA'}</span><span>${escapeHtml(order.sla)}</span></div>
+        <div class="mt-3 space-y-1 border-t border-stroke pt-3 text-sm">${items}</div>
+        ${order.tag ? `<span class="mt-3 inline-block rounded border border-stroke bg-high px-2 py-1 font-mono text-[10px] text-muted">${escapeHtml(order.tag)}</span>` : ''}
+        ${order.note ? `<div class="mt-3 rounded bg-warning px-2 py-2 text-xs font-bold text-black"><span class="material-symbols-outlined mr-1 align-middle text-sm">priority_high</span>${escapeHtml(order.note)}</div>` : ''}
+        ${isQc ? `<button class="qc-action mt-4 w-full rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white" data-table="${escapeHtml(order.id || order.table)}">AI QC Check</button>` : ''}
       </article>`;
     }
 
@@ -242,7 +260,15 @@
     });
 
     document.getElementById('menuButton').addEventListener('click', () => document.getElementById('mobileNav').classList.toggle('hidden'));
-    document.getElementById('refreshButton').addEventListener('click', () => { renderBoard(); showToast('อัปเดตข้อมูลเรียบร้อยแล้ว'); });
+    document.getElementById('refreshButton').addEventListener('click', async () => {
+      try {
+        await loadOrders();
+        renderBoard();
+        showToast('อัปเดตข้อมูลเรียบร้อยแล้ว');
+      } catch (error) {
+        showToast(error.message, false);
+      }
+    });
     const orderModal = document.getElementById('orderModal');
     const orderForm = document.getElementById('orderForm');
     function closeOrderModal() {
@@ -259,7 +285,7 @@
     document.getElementById('closeOrderModal').addEventListener('click', closeOrderModal);
     document.getElementById('cancelOrder').addEventListener('click', closeOrderModal);
     orderModal.addEventListener('click', event => { if (event.target === orderModal) closeOrderModal(); });
-    orderForm.addEventListener('submit', event => {
+    orderForm.addEventListener('submit', async event => {
       event.preventDefault();
       const data = Object.fromEntries(new FormData(orderForm));
       const cookTime = Number(data.cookTimeMinutes);
@@ -272,20 +298,22 @@
         specialRequest: data.specialRequest.trim(),
         status: data.status
       };
-      try {
-        const response = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newOrder)
-        });
-        if (!response.ok) throw new Error('บันทึกออเดอร์ไม่สำเร็จ');
-        await loadOrders();
-        renderBoard();
-        closeOrderModal();
-        showToast('เพิ่มออเดอร์และบันทึกลง mock-orders.json แล้ว');
-      } catch (error) {
-        showToast('ไม่สามารถบันทึก JSON ได้ กรุณาเปิดเว็บผ่าน server.js', false);
-      }
+      orders.unshift({
+        id: newOrder.id,
+        customer: newOrder.customer,
+        menu: newOrder.menu,
+        table: `${newOrder.customer} - #${newOrder.id.slice(-3)}`,
+        age: 'เพิ่มล่าสุด',
+        sla: `${String(newOrder.cookTimeMinutes).padStart(2, '0')}:00`,
+        status: newOrder.status,
+        tag: `[${newOrder.category}]`,
+        items: [`1x ${newOrder.menu}`],
+        category: newOrder.category,
+        note: newOrder.specialRequest
+      });
+      renderBoard();
+      closeOrderModal();
+      showToast('เพิ่มออเดอร์ในรายการแล้ว');
     });
     document.getElementById('optimizerButton').addEventListener('click', event => { event.target.textContent = 'กำลังปรับคิวด้วย AI...'; setTimeout(() => { event.target.textContent = 'เรียกใช้ AI Queue Optimizer'; showToast('ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%'); }, 1000); });
     document.getElementById('returnButton').addEventListener('click', () => showToast('ส่งออเดอร์กลับไปยังสถานีผัดแล้ว', false));
