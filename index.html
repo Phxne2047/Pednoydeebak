@@ -58,9 +58,7 @@
       </a>
       <nav class="hidden items-center gap-1 lg:flex" aria-label="เมนูหลัก">
         <a class="nav-link active rounded-xl border-b-4 border-transparent px-5 py-4 text-base font-semibold" href="index.html">กระดานครัวสด</a>
-        <a class="nav-link rounded-xl border-b-4 border-transparent px-5 py-4 text-base text-muted hover:bg-high hover:text-ink" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
         <a class="nav-link rounded-xl border-b-4 border-transparent px-5 py-4 text-base text-muted hover:bg-high hover:text-ink" href="qc.html">AI QC ประตูตรวจ</a>
-        <a class="nav-link rounded-xl border-b-4 border-transparent px-5 py-4 text-base text-muted hover:bg-high hover:text-ink" href="analytics.html">การวิเคราะห์</a>
       </nav>
       <div class="flex items-center gap-2">
         <button class="rounded-full p-2 text-muted hover:bg-high hover:text-primary" title="ระบบแจ้งเตือน"><span class="material-symbols-outlined">notifications</span></button>
@@ -78,9 +76,7 @@
     <div class="hidden border-t border-stroke bg-surface px-4 py-2 lg:hidden" id="mobileNav">
       <div class="grid grid-cols-2 gap-2">
         <a class="nav-link active rounded-lg px-3 py-2 text-left text-sm" href="index.html">กระดานครัวสด</a>
-        <a class="nav-link rounded-lg px-3 py-2 text-left text-sm text-muted" href="optimizer.html">เพิ่มประสิทธิภาพ</a>
         <a class="nav-link rounded-lg px-3 py-2 text-left text-sm text-muted" href="qc.html">AI QC</a>
-        <a class="nav-link rounded-lg px-3 py-2 text-left text-sm text-muted" href="analytics.html">การวิเคราะห์</a>
       </div>
     </div>
   </header>
@@ -141,6 +137,26 @@
 
   <div class="pointer-events-none fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2 rounded-lg border border-success/40 bg-elevated px-4 py-3 text-sm shadow-xl" id="toast"></div>
 
+  <div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="w-full max-w-md rounded-2xl border border-danger/50 bg-surface shadow-2xl">
+      <div class="flex items-start gap-3 border-b border-stroke px-5 py-4">
+        <span class="material-symbols-outlined grid h-11 w-11 shrink-0 place-items-center rounded-full bg-danger/15 text-2xl text-danger">delete_forever</span>
+        <div>
+          <p class="font-mono text-xs uppercase tracking-widest text-danger">Delete order</p>
+          <h2 class="mt-1 text-xl font-bold" id="deleteModalTitle">ยืนยันการลบออเดอร์</h2>
+        </div>
+      </div>
+      <div class="px-5 py-5">
+        <p class="text-muted">คุณต้องการลบออเดอร์ <strong class="text-ink" id="deleteOrderLabel"></strong> ใช่หรือไม่?</p>
+        <p class="mt-2 text-sm text-danger">การดำเนินการนี้ไม่สามารถกู้คืนได้</p>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-stroke px-5 py-4">
+        <button class="rounded-lg border border-stroke px-4 py-2 text-sm text-muted hover:bg-high" id="cancelDeleteButton" type="button">ยกเลิก</button>
+        <button class="rounded-lg bg-danger px-4 py-2 text-sm font-bold text-white hover:brightness-110" id="confirmDeleteButton" type="button"><span class="material-symbols-outlined mr-1 align-middle text-base">delete</span>ลบออเดอร์</button>
+      </div>
+    </div>
+  </div>
+
   <div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4" id="orderModal" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
     <form class="w-full max-w-2xl rounded-2xl border border-stroke bg-surface shadow-2xl" id="orderForm">
       <div class="flex items-start justify-between border-b border-stroke px-5 py-4">
@@ -188,7 +204,10 @@
           ? order.items
           : [`1x ${order.menu}`],
         category: order.category,
-        note: order.specialRequest
+        note: order.specialRequest,
+        cookingStartedAt: order.cookingStartedAt || (order.status === 'cooking' ? order.updatedAt : null),
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt
       };
     }
 
@@ -241,10 +260,33 @@
       }[character]));
     }
 
+    function getCookingTiming(order) {
+      if (order.status !== 'cooking' || !order.cookingStartedAt) {
+        return null;
+      }
+      const startedAt = new Date(order.cookingStartedAt);
+      const elapsedSeconds = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
+      const totalSeconds = order.cookTimeMinutes * 60;
+      return {
+        startedAt,
+        elapsedSeconds,
+        remainingSeconds: totalSeconds - elapsedSeconds,
+        late: elapsedSeconds > totalSeconds
+      };
+    }
+
+    function formatClock(seconds) {
+      const absolute = Math.abs(seconds);
+      const minutes = Math.floor(absolute / 60);
+      const remainder = absolute % 60;
+      return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+    }
+
     function getOrderPriority(order) {
+      const timing = getCookingTiming(order);
       if (order.status === 'done') return { rank: 4, label: 'เสร็จแล้ว', badge: 'border-success/40 bg-success/10 text-success', late: false };
       if (order.status === 'qc') return { rank: 0, label: 'ทำก่อน · รอตรวจ QC', badge: 'border-warning/50 bg-warning/15 text-warning', late: false };
-      if (order.status === 'cooking' && order.cookTimeMinutes <= 8) return { rank: 1, label: 'ล่าช้า · เร่งด่วน', badge: 'border-danger/50 bg-danger/15 text-danger', late: true };
+      if (order.status === 'cooking' && timing?.late) return { rank: 0, label: 'ล่าช้า · เร่งด่วน', badge: 'border-danger/50 bg-danger/15 text-danger', late: true };
       if (order.status === 'cooking') return { rank: 2, label: 'กำลังดำเนินการ', badge: 'border-primary/50 bg-primary/15 text-primaryText', late: false };
       return { rank: 3, label: 'ออเดอร์ใหม่ · รอเข้าคิว', badge: 'border-success/50 bg-success/10 text-success', late: false };
     }
@@ -253,18 +295,28 @@
       const isDone = order.status === 'done';
       const isQc = order.status === 'qc';
       const priority = getOrderPriority(order);
+      const timing = getCookingTiming(order);
       const bar = priority.late ? 'bg-danger' : isDone ? 'bg-success' : isQc ? 'bg-warning' : 'bg-primary';
+      const cardStyle = priority.late ? 'border-danger bg-danger/10 shadow-lg shadow-danger/10' : 'border-stroke bg-elevated';
       const items = order.items.map(item => `<p>${escapeHtml(item)}</p>`).join('');
-      return `<article class="order-card rounded-lg border border-stroke bg-elevated p-4" data-order="${escapeHtml(order.table)}">
+      const cookingTimer = timing
+        ? `<div class="mt-3 grid grid-cols-2 gap-2 rounded-lg border ${timing.late ? 'border-danger/50 bg-danger/10' : 'border-primary/30 bg-surface'} p-3 font-mono text-xs"><div><p class="text-muted">เริ่มปรุง</p><p class="mt-1 font-bold text-ink">${timing.startedAt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.</p></div><div class="text-right"><p class="text-muted">${timing.late ? 'ล่าช้าแล้ว' : 'เวลาคงเหลือ'}</p><p class="mt-1 text-base font-bold ${timing.late ? 'text-danger' : 'text-success'}">${timing.late ? '+' : ''}${formatClock(timing.remainingSeconds)}</p></div></div>`
+        : '';
+      return `<article class="order-card rounded-lg border ${cardStyle} p-4" data-order="${escapeHtml(order.table)}">
         <div class="flex items-start justify-between gap-2"><div class="flex items-center gap-2">${queueNumber ? `<span class="grid h-7 w-7 shrink-0 place-items-center rounded-full ${priority.late ? 'bg-danger' : 'bg-primary'} font-mono text-xs font-bold text-white">${queueNumber}</span>` : ''}<b class="font-mono text-sm ${isDone ? 'text-success' : 'text-primaryText'}">${escapeHtml(order.table)}</b></div><span class="font-mono text-[10px] text-muted">${escapeHtml(order.age)}</span></div>
         <div class="mt-3 inline-flex rounded-md border px-2 py-1 font-mono text-[10px] font-bold ${priority.badge}">${priority.late ? '⚠ ' : ''}${priority.label}</div>
         <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-stroke"><div class="h-full w-3/4 rounded-full ${bar}"></div></div>
         <div class="mt-2 flex justify-between font-mono text-[10px] ${isDone ? 'text-success' : isQc ? 'text-warning' : 'text-muted'}"><span>${isDone ? 'เสิร์ฟแล้ว' : isQc ? 'พร้อมตรวจ' : 'SLA'}</span><span>${escapeHtml(order.sla)}</span></div>
+        ${cookingTimer}
         <div class="mt-3 space-y-1 border-t border-stroke pt-3 text-sm">${items}</div>
         ${order.tag ? `<span class="mt-3 inline-block rounded border border-stroke bg-high px-2 py-1 font-mono text-[10px] text-muted">${escapeHtml(order.tag)}</span>` : ''}
         ${order.note ? `<div class="mt-3 rounded bg-warning px-2 py-2 text-xs font-bold text-black"><span class="material-symbols-outlined mr-1 align-middle text-sm">priority_high</span>${escapeHtml(order.note)}</div>` : ''}
-        ${order.status === 'new' ? `<button class="start-cooking-action mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:brightness-110" data-order-id="${escapeHtml(order.id)}"><span class="material-symbols-outlined text-base">soup_kitchen</span>อัปเดตเป็นกำลังปรุง</button>` : ''}
-        ${isQc ? `<button class="qc-action mt-4 w-full rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white" data-table="${escapeHtml(order.id || order.table)}">AI QC Check</button>` : ''}
+        <div class="mt-4 flex gap-2">
+          ${order.status === 'new' ? `<button class="start-cooking-action flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:brightness-110" data-order-id="${escapeHtml(order.id)}"><span class="material-symbols-outlined text-base">soup_kitchen</span>อัปเดตเป็นกำลังปรุง</button>` : ''}
+          ${order.status === 'cooking' ? `<button class="finish-cooking-action flex flex-1 items-center justify-center gap-2 rounded-lg bg-success px-3 py-2 text-xs font-bold text-white hover:brightness-110" data-order-id="${escapeHtml(order.id)}"><span class="material-symbols-outlined text-base">task_alt</span>ปรุงเสร็จแล้ว / ส่งไป QC</button>` : ''}
+          ${isQc ? `<button class="qc-action flex-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white" data-table="${escapeHtml(order.id || order.table)}">AI QC Check</button>` : ''}
+          <button class="delete-order-action grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-danger/50 text-danger hover:bg-danger hover:text-white" data-order-id="${escapeHtml(order.id)}" aria-label="ลบออเดอร์ ${escapeHtml(order.id)}" title="ลบออเดอร์"><span class="material-symbols-outlined text-lg">delete</span></button>
+        </div>
       </article>`;
     }
 
@@ -279,6 +331,25 @@
       document.querySelectorAll('.page').forEach(section => section.classList.toggle('hidden', section.id !== page));
       document.querySelectorAll('.nav-link').forEach(link => link.classList.toggle('active', link.dataset.page === page));
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    let pendingDeleteOrderId = null;
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteOrderLabel = document.getElementById('deleteOrderLabel');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+
+    function closeDeleteModal() {
+      pendingDeleteOrderId = null;
+      deleteModal.classList.add('hidden');
+      deleteModal.classList.remove('flex');
+    }
+
+    function openDeleteModal(orderId) {
+      pendingDeleteOrderId = orderId;
+      deleteOrderLabel.textContent = orderId;
+      deleteModal.classList.remove('hidden');
+      deleteModal.classList.add('flex');
+      confirmDeleteButton.focus();
     }
 
     document.addEventListener('click', event => {
@@ -313,12 +384,72 @@
             });
         }
       }
+      const finishCooking = event.target.closest('.finish-cooking-action');
+      if (finishCooking) {
+        updateOrderStatusFromBoard(finishCooking, 'qc', 'ส่งออเดอร์ไปยัง QC แล้ว');
+      }
       const qc = event.target.closest('.qc-action');
       if (qc) {
         const target = encodeURIComponent(qc.dataset.table || '');
         window.location.href = `qc.html?order=${target}`;
       }
+      const deleteOrder = event.target.closest('.delete-order-action');
+      if (deleteOrder) {
+        openDeleteModal(deleteOrder.dataset.orderId);
+      }
     });
+
+    document.getElementById('cancelDeleteButton').addEventListener('click', closeDeleteModal);
+    deleteModal.addEventListener('click', event => {
+      if (event.target === deleteModal) closeDeleteModal();
+    });
+    confirmDeleteButton.addEventListener('click', async () => {
+      if (!pendingDeleteOrderId) return;
+      const orderId = pendingDeleteOrderId;
+      confirmDeleteButton.disabled = true;
+      confirmDeleteButton.textContent = 'กำลังลบ...';
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}`, {
+          method: 'DELETE'
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.message || 'ลบออเดอร์ไม่สำเร็จ');
+        }
+        await loadOrders();
+        renderBoard();
+        closeDeleteModal();
+        showToast(`ลบออเดอร์ ${orderId} แล้ว`);
+      } catch (error) {
+        showToast(error.message, false);
+      } finally {
+        confirmDeleteButton.disabled = false;
+        confirmDeleteButton.innerHTML = '<span class="material-symbols-outlined mr-1 align-middle text-base">delete</span>ลบออเดอร์';
+      }
+    });
+
+    async function updateOrderStatusFromBoard(button, status, successMessage) {
+      const orderId = button.dataset.orderId;
+      button.disabled = true;
+      button.textContent = 'กำลังอัปเดต...';
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.message || 'อัปเดตสถานะไม่สำเร็จ');
+        }
+        await loadOrders();
+        renderBoard();
+        showToast(`${orderId} ${successMessage}`);
+      } catch (error) {
+        renderBoard();
+        showToast(error.message, false);
+      }
+    }
 
     document.getElementById('menuButton').addEventListener('click', () => document.getElementById('mobileNav').classList.toggle('hidden'));
     document.getElementById('refreshButton').addEventListener('click', async () => {
@@ -390,6 +521,12 @@
     loadOrders()
       .then(renderBoard)
       .catch(error => showToast(error.message, false));
+
+    setInterval(() => {
+      if (orders.some(order => order.status === 'cooking')) {
+        renderBoard();
+      }
+    }, 1000);
   </script>
 </body>
 </html>
