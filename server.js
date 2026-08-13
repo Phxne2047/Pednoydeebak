@@ -86,28 +86,71 @@ async function getOrders() {
   return rows.map(mapOrder);
 }
 
+const validStatuses = new Set(["new", "cooking", "qc", "done"]);
+
+function validateOrder(order) {
+  const id = String(order.id || "").trim();
+  const customer = String(order.customer || "").trim();
+  const menu = String(order.menu || "").trim();
+  const category = String(order.category || "").trim();
+  const cookTimeMinutes = Number(order.cookTimeMinutes);
+  const status = String(order.status || "new").trim();
+
+  if (!id || !customer || !menu || !category) {
+    throw new Error("กรุณากรอกข้อมูลออเดอร์ให้ครบถ้วน");
+  }
+  if (!Number.isInteger(cookTimeMinutes) || cookTimeMinutes < 1 || cookTimeMinutes > 999) {
+    throw new Error("เวลาปรุงต้องเป็นจำนวนเต็มตั้งแต่ 1 ถึง 999 นาที");
+  }
+  if (!validStatuses.has(status)) {
+    throw new Error("สถานะออเดอร์ไม่ถูกต้อง");
+  }
+
+  return {
+    id,
+    customer,
+    menu,
+    category,
+    cookTimeMinutes,
+    specialRequest: String(order.specialRequest || "").trim(),
+    status,
+  };
+}
+
 async function createOrder(order) {
-  const rows = await sql`
-    insert into orders (
-      id,
-      customer,
-      menu,
-      category,
-      cook_time_minutes,
-      special_request,
-      status
-    ) values (
-      ${order.id},
-      ${order.customer},
-      ${order.menu},
-      ${order.category},
-      ${Number(order.cookTimeMinutes)},
-      ${order.specialRequest || null},
-      ${order.status || "new"}
-    )
-    returning *
-  `;
-  return mapOrder(rows[0]);
+  const validOrder = validateOrder(order);
+  try {
+    const rows = await sql`
+      insert into orders (
+        id,
+        customer,
+        menu,
+        category,
+        cook_time_minutes,
+        special_request,
+        status,
+        cooking_started_at
+      ) values (
+        ${validOrder.id},
+        ${validOrder.customer},
+        ${validOrder.menu},
+        ${validOrder.category},
+        ${validOrder.cookTimeMinutes},
+        ${validOrder.specialRequest || null},
+        ${validOrder.status},
+        ${validOrder.status === "cooking" ? new Date() : null}
+      )
+      returning *
+    `;
+    return mapOrder(rows[0]);
+  } catch (error) {
+    if (error.code === "23505") {
+      const err = new Error(`รหัสออเดอร์ "${validOrder.id}" มีอยู่ในระบบแล้ว กรุณาใช้รหัสออเดอร์อื่น`);
+      err.statusCode = 409;
+      throw err;
+    }
+    throw error;
+  }
 }
 
 async function updateOrderStatus(id, status) {
@@ -206,7 +249,7 @@ const server = http.createServer(async (request, response) => {
     });
   } catch (error) {
     console.error(error);
-    sendJson(response, 500, {
+    sendJson(response, error.statusCode || 500, {
       message: error.message || "เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล",
     });
   }

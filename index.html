@@ -92,7 +92,7 @@
         <div class="flex gap-2">
           <button class="rounded-lg border border-stroke px-4 py-2 text-sm text-muted hover:bg-high" id="refreshButton"><span class="material-symbols-outlined mr-1 align-middle text-base">refresh</span>รีเฟรช</button>
           <button class="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:brightness-110" id="newOrderButton"><span class="material-symbols-outlined mr-1 align-middle text-base">add</span>ออเดอร์ใหม่</button>
-          <button class="rounded-lg border border-primary px-4 py-2 text-sm font-bold text-primaryText hover:bg-primary/10" id="aiAnalysisButton"><span class="material-symbols-outlined mr-1 align-middle text-base">smart_toy</span>ให้ AI วิเคราะห์</button>
+
         </div>
       </div>
 
@@ -461,18 +461,34 @@
         showToast(error.message, false);
       }
     });
-    document.getElementById('aiAnalysisButton').addEventListener('click', () => {
-      window.location.href = 'chat.html';
-    });
+    const aiAnalysisButton = document.getElementById('aiAnalysisButton');
+    if (aiAnalysisButton) {
+      aiAnalysisButton.addEventListener('click', () => {
+        window.location.href = 'chat.html';
+      });
+    }
     const orderModal = document.getElementById('orderModal');
     const orderForm = document.getElementById('orderForm');
     function closeOrderModal() {
       orderModal.classList.add('hidden');
       orderModal.classList.remove('flex');
     }
+    function getNextOrderId() {
+      let maxNum = 1000;
+      for (const order of orders) {
+        const match = String(order.id || '').match(/MSU-(\d+)/i);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxNum) {
+            maxNum = num;
+          }
+        }
+      }
+      return `MSU-${maxNum + 1}`;
+    }
     document.getElementById('newOrderButton').addEventListener('click', () => {
       orderForm.reset();
-      orderForm.elements.id.value = `MSU-${1001 + orders.length}`;
+      orderForm.elements.id.value = getNextOrderId();
       orderModal.classList.remove('hidden');
       orderModal.classList.add('flex');
       orderForm.elements.customer.focus();
@@ -482,17 +498,29 @@
     orderModal.addEventListener('click', event => { if (event.target === orderModal) closeOrderModal(); });
     orderForm.addEventListener('submit', async event => {
       event.preventDefault();
+      const submitButton = orderForm.querySelector('button[type="submit"]');
       const data = Object.fromEntries(new FormData(orderForm));
-      const cookTime = Number(data.cookTimeMinutes);
       const newOrder = {
-        id: data.id,
-        customer: data.customer,
-        menu: data.menu,
-        category: data.category,
-        cookTimeMinutes: cookTime,
-        specialRequest: data.specialRequest.trim(),
-        status: data.status
+        id: String(data.id || '').trim(),
+        customer: String(data.customer || '').trim(),
+        menu: String(data.menu || '').trim(),
+        category: String(data.category || '').trim(),
+        cookTimeMinutes: Number(data.cookTimeMinutes),
+        specialRequest: String(data.specialRequest || '').trim(),
+        status: data.status || 'new'
       };
+
+      if (!newOrder.id || !newOrder.customer || !newOrder.menu || !newOrder.category) {
+        showToast('กรุณากรอกข้อมูลออเดอร์ให้ครบถ้วน', false);
+        return;
+      }
+      if (!Number.isInteger(newOrder.cookTimeMinutes) || newOrder.cookTimeMinutes < 1) {
+        showToast('กรุณาระบุเวลาปรุงอย่างน้อย 1 นาที', false);
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'กำลังบันทึก...';
       try {
         const response = await fetch('/api/orders', {
           method: 'POST',
@@ -501,19 +529,37 @@
         });
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          throw new Error(error.message || 'บันทึกออเดอร์ไม่สำเร็จ');
+          throw new Error(error.message || `บันทึกออเดอร์ไม่สำเร็จ (HTTP ${response.status})`);
         }
         await loadOrders();
         renderBoard();
         closeOrderModal();
         showToast('บันทึกออเดอร์ลงฐานข้อมูลแล้ว');
       } catch (error) {
-        showToast(error.message, false);
+        showToast(error.message || 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', false);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'บันทึกออเดอร์';
       }
     });
-    document.getElementById('optimizerButton').addEventListener('click', event => { event.target.textContent = 'กำลังปรับคิวด้วย AI...'; setTimeout(() => { event.target.textContent = 'เรียกใช้ AI Queue Optimizer'; showToast('ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%'); }, 1000); });
-    document.getElementById('returnButton').addEventListener('click', () => showToast('ส่งออเดอร์กลับไปยังสถานีผัดแล้ว', false));
-    document.getElementById('exportButton').addEventListener('click', () => showToast('สร้างรายงานพร้อมดาวน์โหลดแล้ว'));
+    const optimizerButton = document.getElementById('optimizerButton');
+    if (optimizerButton) {
+      optimizerButton.addEventListener('click', event => {
+        event.target.textContent = 'กำลังปรับคิวด้วย AI...';
+        setTimeout(() => {
+          event.target.textContent = 'เรียกใช้ AI Queue Optimizer';
+          showToast('ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%');
+        }, 1000);
+      });
+    }
+    const returnButton = document.getElementById('returnButton');
+    if (returnButton) {
+      returnButton.addEventListener('click', () => showToast('ส่งออเดอร์กลับไปยังสถานีผัดแล้ว', false));
+    }
+    const exportButton = document.getElementById('exportButton');
+    if (exportButton) {
+      exportButton.addEventListener('click', () => showToast('สร้างรายงานพร้อมดาวน์โหลดแล้ว'));
+    }
 
     // Show a loading state while fetching all orders from Supabase.
     orders = [];
