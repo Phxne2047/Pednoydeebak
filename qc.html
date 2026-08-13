@@ -96,15 +96,10 @@
         </div>
 
         <label class="mt-5 block text-sm font-semibold text-muted" for="order">รายการอาหาร</label>
-        <select id="order" class="mt-2 w-full rounded-lg border border-stroke bg-surface px-3 py-3 text-sm text-ink outline-none focus:border-primary">
-          <option>ข้าวกะเพราหมูสับ — ไม่ใส่ผักชี, เพิ่มไข่ดาว</option>
-          <option>ต้มยำกุ้งน้ำข้น — เผ็ดน้อย</option>
-          <option>ข้าวผัดไก่ — ไม่ใส่หอมใหญ่</option>
-        </select>
+        <input id="order" readonly class="mt-2 w-full rounded-lg border border-stroke bg-surface px-3 py-3 text-sm text-ink outline-none" value="กำลังโหลดรายการจากกระดานครัว..." />
 
-        <div class="mt-4 rounded-lg border border-stroke bg-surface p-3">
-          <p class="flex items-center gap-2 text-sm font-bold text-danger"><span class="material-symbols-outlined text-base">warning</span>ไม่ใส่ผักชี</p>
-          <p class="mt-2 flex items-center gap-2 text-sm text-success"><span class="material-symbols-outlined text-base">add_circle</span>เพิ่มไข่ดาว</p>
+        <div id="orderDetails" class="mt-4 rounded-lg border border-stroke bg-surface p-3">
+          <p class="text-sm text-muted">กำลังโหลดรายละเอียดออเดอร์...</p>
         </div>
 
         <label class="mt-5 block text-sm font-semibold text-muted" for="prompt">Prompt สำหรับ AI</label>
@@ -164,6 +159,43 @@
     const generateButton = document.getElementById("generate");
     const statusEl = document.getElementById("status");
     const resultEl = document.getElementById("result");
+    const orderInput = document.getElementById("order");
+
+    const orderDetailsEl = document.getElementById("orderDetails");
+    const selectedOrder = new URLSearchParams(window.location.search).get("order");
+    let currentOrder = null;
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
+    }
+
+    function renderOrder(order) {
+      if (!order) {
+        orderInput.value = "ไม่พบออเดอร์ที่เลือก";
+        orderDetailsEl.innerHTML = '<p class="text-sm text-danger">ไม่พบข้อมูลออเดอร์ กรุณากลับไปเลือกจากกระดานครัว</p>';
+        return;
+      }
+      orderInput.value = `${order.customer} - #${order.id.slice(-3)} · ${order.menu}`;
+      const request = order.specialRequest?.trim();
+      orderDetailsEl.innerHTML = `<p class="flex items-center gap-2 text-sm font-bold text-primaryText"><span class="material-symbols-outlined text-base">restaurant_menu</span>${escapeHtml(order.menu)}</p><p class="mt-2 text-xs text-muted">หมวดหมู่: ${escapeHtml(order.category)} · เวลาปรุง: ${escapeHtml(order.cookTimeMinutes)} นาที</p>${request ? `<p class="mt-3 flex items-start gap-2 text-sm font-bold text-warning"><span class="material-symbols-outlined text-base">priority_high</span><span>${escapeHtml(request)}</span></p>` : '<p class="mt-3 text-sm text-success">ไม่มีคำขอพิเศษ</p>'}`;
+      document.getElementById("prompt").value = `ตรวจสอบเมนู ${order.menu} สำหรับ ${order.customer} ให้ตรงกับออเดอร์ โดยตรวจส่วนประกอบและคำขอพิเศษ: ${request || "ไม่มี"} สรุปผล PASS หรือ FAIL พร้อมเหตุผลภาษาไทย`;
+    }
+
+    async function loadSelectedOrder() {
+      if (!selectedOrder) return renderOrder(null);
+      try {
+        const response = await fetch("/api/orders").catch(() => fetch("data/mock-orders.json"));
+        if (!response.ok) throw new Error("โหลดข้อมูลออเดอร์ไม่สำเร็จ");
+        const data = await response.json();
+        currentOrder = data.orders.find(order => `${order.customer} - #${order.id.slice(-3)}` === selectedOrder || order.id === selectedOrder || order.customer === selectedOrder);
+        renderOrder(currentOrder);
+      } catch (error) {
+        orderInput.value = "โหลดข้อมูลไม่สำเร็จ";
+        orderDetailsEl.innerHTML = `<p class="text-sm text-danger">${escapeHtml(error.message)}</p>`;
+      }
+    }
+
+    loadSelectedOrder();
 
     function errorMessage(data, fallback) {
       if (data?.error && typeof data.error === "object") return data.error.message || data.error.code || fallback;
@@ -244,10 +276,6 @@
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       objectUrl = URL.createObjectURL(blob);
       return { url, displayUrl: objectUrl };
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
     }
 
     function renderResult(result, image) {
