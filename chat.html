@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KitchenPulse AI - Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#131316',
+            surface: '#1f1f22',
+            elevated: '#27272a',
+            stroke: '#3f3f46',
+            muted: '#e0c0b1',
+            ink: '#e4e1e6',
+            primary: '#f97316',
+            primaryText: '#ffb690',
+            success: '#10b981',
+            danger: '#ef4444'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; }
+  </style>
+</head>
+<body class="bg-background font-sans text-ink">
+  <header class="border-b border-stroke bg-background/95">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+      <a href="index.html" class="font-bold text-primaryText">KitchenPulse AI</a>
+      <a href="index.html" class="text-sm text-muted hover:text-primaryText">กลับหน้าหลัก</a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-5xl space-y-5 p-4 md:p-6">
+    <section class="rounded-xl border border-stroke bg-surface p-5">
+      <div class="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+        <div>
+          <p class="text-xs uppercase tracking-widest text-primaryText">AskMe API Chat</p>
+          <h1 class="mt-2 text-3xl font-bold">ผู้ช่วย AI สำหรับครัว</h1>
+          <p class="mt-1 text-sm text-muted">วิเคราะห์ออเดอร์ Cook Time และ Special Request</p>
+        </div>
+        <div id="authStatus" class="rounded-lg bg-elevated px-3 py-2 text-xs text-muted">กำลังเตรียมระบบ...</div>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-stroke bg-surface p-5">
+      <div class="mb-4 grid gap-3 md:grid-cols-[1fr_auto]">
+        <label class="text-sm text-muted">
+          โมเดล
+          <select id="modelSelect" class="mt-2 w-full rounded-lg border border-stroke bg-elevated px-3 py-2 text-ink" disabled>
+            <option>กำลังโหลดโมเดล...</option>
+          </select>
+        </label>
+        <div class="flex gap-2 self-end">
+          <button id="analyzeButton" class="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled>จัดออเดอร์ด้วย AI</button>
+          <button id="clearButton" class="rounded-lg border border-stroke px-4 py-2 text-sm text-muted hover:bg-elevated">ล้างแชท</button>
+        </div>
+      </div>
+      <div id="messages" class="min-h-80 space-y-3 rounded-lg border border-stroke bg-background p-4" aria-live="polite"></div>
+      <form id="chatForm" class="mt-4 flex gap-2">
+        <input id="messageInput" class="min-w-0 flex-1 rounded-lg border border-stroke bg-elevated px-4 py-3 text-ink outline-none focus:border-primary" placeholder="พิมพ์ข้อความถึง AI..." autocomplete="off" disabled />
+        <button id="sendButton" class="rounded-lg bg-primary px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" disabled>ส่ง</button>
+      </form>
+      <p id="errorMessage" class="mt-3 hidden rounded-lg bg-danger/10 p-3 text-sm text-danger"></p>
+    </section>
+  </main>
+
+  <script>
+    const BASE_URL = 'https://itmsuhackathon.askme.co.th';
+    const API_EMAIL = sessionStorage.getItem('askme_email') || '67011212047@msu.ac.th';
+    const API_PASSWORD = sessionStorage.getItem('askme_password') || 'Phone@1324';
+    const KITCHEN_CONTEXT = 'คุณเป็น AI ผู้ช่วยผู้จัดการครัวร้านตามสั่งรอบ มมส. วิเคราะห์ออเดอร์ เวลาปรุง และ Special Request อย่างรอบคอบ ให้คำแนะนำที่ทำได้จริงเป็นภาษาไทย';
+    let accessToken = sessionStorage.getItem('askme_access_token') || '';
+    let sessionId = sessionStorage.getItem('askme_session_id') || '';
+    let messages = [];
+    let orders = [];
+
+    const elements = {
+      authStatus: document.getElementById('authStatus'),
+      modelSelect: document.getElementById('modelSelect'),
+      messages: document.getElementById('messages'),
+      input: document.getElementById('messageInput'),
+      send: document.getElementById('sendButton'),
+      form: document.getElementById('chatForm'),
+      error: document.getElementById('errorMessage'),
+      analyze: document.getElementById('analyzeButton')
+    };
+
+    function errorText(data, fallback) {
+      if (data?.error && typeof data.error === 'object') return data.error.message || data.error.code || fallback;
+      return data?.message || data?.error || fallback;
+    }
+
+    function setError(message) {
+      elements.error.textContent = message;
+      elements.error.classList.toggle('hidden', !message);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    }
+
+    function renderMessages() {
+      elements.messages.innerHTML = messages.length
+        ? messages.map(message => `<div class="rounded-lg p-3 ${message.role === 'user' ? 'ml-8 bg-primary/20' : 'mr-8 bg-elevated'}"><b class="text-xs text-primaryText">${message.role === 'user' ? 'คุณ' : 'AI'}</b><p class="mt-1 whitespace-pre-wrap text-sm">${escapeHtml(message.content)}</p></div>`).join('')
+        : '<p class="text-center text-sm text-muted">เริ่มสนทนา หรือกด “วิเคราะห์ออเดอร์”</p>';
+      elements.messages.scrollTop = elements.messages.scrollHeight;
+    }
+
+    async function login() {
+      if (!API_EMAIL || !API_PASSWORD) throw new Error('ไม่พบข้อมูลสำหรับเข้าสู่ระบบ AskMe API');
+      const response = await fetch(`${BASE_URL}/api/v1/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: API_EMAIL, password: API_PASSWORD }) });
+      const data = await response.json();
+      if (!response.ok || !data.access_token) throw new Error(errorText(data, 'เข้าสู่ระบบไม่สำเร็จ'));
+      accessToken = data.access_token;
+      sessionStorage.setItem('askme_access_token', accessToken);
+      elements.authStatus.textContent = 'เข้าสู่ระบบแล้ว';
+      elements.authStatus.className = 'rounded-lg bg-success/10 px-3 py-2 text-xs text-success';
+    }
+
+    async function loadOrders() {
+      const response = await fetch('data/mock-orders.json');
+      if (!response.ok) throw new Error('โหลดข้อมูลออเดอร์จำลองไม่สำเร็จ');
+      const data = await response.json();
+      orders = data.orders || [];
+    }
+
+    async function loadModels() {
+      const response = await fetch(`${BASE_URL}/api/v1/chat-api/models`, { headers: { Authorization: `Bearer ${accessToken}` } });
+      const data = await response.json();
+      if (!response.ok) throw new Error(errorText(data, 'โหลดรายการโมเดลไม่สำเร็จ'));
+      const models = Array.isArray(data) ? data : data.models || data.data || [];
+      elements.modelSelect.innerHTML = models.map(model => `<option value="${escapeHtml(model.id)}">${escapeHtml(model.display_name || model.id)}</option>`).join('');
+      if (!models.length) throw new Error('ไม่พบโมเดลที่ใช้งานได้');
+      elements.modelSelect.disabled = false;
+      elements.input.disabled = false;
+      elements.send.disabled = false;
+      elements.analyze.disabled = false;
+    }
+
+    async function sendMessage(content) {
+      const selectedModel = elements.modelSelect.value;
+      messages.push({ role: 'user', content });
+      renderMessages();
+      elements.send.disabled = true;
+      elements.analyze.disabled = true;
+      setError('');
+      try {
+        const response = await fetch(`${BASE_URL}/api/v1/chat-api/chat/completions`, { method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Accept: 'text/event-stream' }, body: JSON.stringify({ model: selectedModel, stream: true, max_tokens: 1024, temperature: 0.7, messages: [{ role: 'system', content: KITCHEN_CONTEXT }, ...messages], ...(sessionId ? { session_id: sessionId } : {}) }) });
+        const headerSession = response.headers.get('X-Session-Id');
+        if (headerSession) sessionId = headerSession;
+        if (!response.ok) throw new Error(errorText(await response.json(), `ส่งข้อความไม่สำเร็จ (${response.status})`));
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let answer = '';
+        let buffer = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith('data:')) continue;
+            const raw = line.slice(5).trim();
+            if (raw === '[DONE]') continue;
+            try {
+              const chunk = JSON.parse(raw);
+              answer += chunk.choices?.[0]?.delta?.content || '';
+              if (chunk.session_id) sessionId = chunk.session_id;
+            } catch {}
+          }
+        }
+        messages.push({ role: 'assistant', content: answer || 'โมเดลไม่ได้ส่งข้อความตอบกลับ' });
+        if (sessionId) sessionStorage.setItem('askme_session_id', sessionId);
+        renderMessages();
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        elements.send.disabled = false;
+        elements.analyze.disabled = false;
+      }
+    }
+
+    elements.form.addEventListener('submit', event => {
+      event.preventDefault();
+      const content = elements.input.value.trim();
+      if (!content) return;
+      elements.input.value = '';
+      sendMessage(content);
+    });
+
+    elements.analyze.addEventListener('click', () => {
+      const summary = orders.map(order => `${order.id}: ${order.menu}, Cook Time ${order.cookTimeMinutes} นาที, Special Request: ${order.specialRequest}, สถานะ: ${order.status}`).join('\n');
+      sendMessage(`จัดออเดอร์ให้ครัวเลยจากข้อมูลด้านล่าง โดยตอบเป็นตารางหรือรายการที่อ่านง่ายตามลำดับนี้: 1) ลำดับการทำ 2) สถานีที่ควรส่ง 3) เหตุผลและเวลาปรุง 4) Special Request ที่ต้องตรวจซ้ำ 5) คำเตือนออเดอร์แพ้หรือเสี่ยงปนเปื้อน ห้ามเปลี่ยนข้อมูลออเดอร์ และสรุปคำสั่งที่แต่ละสถานีทำได้ทันที\n\n${summary}`);
+    });
+
+    document.getElementById('clearButton').addEventListener('click', () => { messages = []; sessionId = ''; sessionStorage.removeItem('askme_session_id'); renderMessages(); });
+
+    (async () => {
+      try {
+        await loadOrders();
+        await login();
+        await loadModels();
+        renderMessages();
+      } catch (error) {
+        elements.authStatus.textContent = 'ยังไม่ได้เชื่อมต่อ API';
+        setError(error.message);
+      }
+    })();
+  </script>
+</body>
+</html>
