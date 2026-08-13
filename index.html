@@ -104,10 +104,10 @@
         <div class="rounded-xl border border-stroke bg-elevated p-4"><p class="font-mono text-xs text-muted">ออเดอร์ทั้งหมด</p><p class="mt-2 text-3xl font-bold" id="totalMetric">8</p></div>
         <div class="rounded-xl border-l-4 border-primary border-y border-r border-stroke bg-elevated p-4"><p class="font-mono text-xs text-muted">กำลังดำเนินการ</p><p class="mt-2 text-3xl font-bold text-primaryText" id="progressMetric">4</p></div>
         <div class="rounded-xl border border-stroke bg-elevated p-4"><p class="font-mono text-xs text-muted">พร้อมสำหรับ QC</p><p class="mt-2 text-3xl font-bold text-warning" id="qcMetric">2</p></div>
-        <div class="rounded-xl border border-stroke bg-elevated p-4"><p class="font-mono text-xs text-muted">เสิร์ฟแล้ว</p><p class="mt-2 text-3xl font-bold text-success" id="servedMetric">2</p></div>
+        <div class="rounded-xl border border-danger/50 bg-danger/10 p-4"><p class="font-mono text-xs text-muted">ออเดอร์เร่งด่วน</p><p class="mt-2 text-3xl font-bold text-danger" id="urgentMetric">0</p></div>
       </div>
 
-      <div class="grid min-h-[560px] grid-cols-1 gap-4 xl:grid-cols-4" id="boardGrid"></div>
+      <div class="grid min-h-[560px] grid-cols-1 gap-4 xl:grid-cols-3" id="boardGrid"></div>
     </section>
 
     <section id="optimizer" class="page hidden space-y-5">
@@ -181,6 +181,7 @@
         table: `${order.customer || 'ไม่ระบุโต๊ะ'} - #${String(order.id || '').slice(-3)}`, 
         age: 'ข้อมูลล่าสุด',
         sla: `${String(order.cookTimeMinutes || 10).padStart(2, '0')}:00`,
+        cookTimeMinutes: Number(order.cookTimeMinutes || 10),
         status: order.status || 'new',
         tag: order.category ? `[${order.category}]` : '',
         items: Array.isArray(order.items) && order.items.length
@@ -194,38 +195,40 @@
     let orders = DEFAULT_MOCK_ORDERS.map(mapOrder);
 
     async function loadOrders() {
-      try {
-        const response = await fetch('/api/orders').catch(() => fetch('data/mock-orders.json'));
-        if (!response.ok) throw new Error('โหลดข้อมูลออเดอร์ไม่สำเร็จ');
-        const data = await response.json();
-        if (Array.isArray(data.orders)) {
-          orders = data.orders.map(mapOrder);
-        }
-      } catch (error) {
-        console.warn('Network fetch unavailable, using default embedded mock orders:', error.message);
+      const response = await fetch('/api/orders', { cache: 'no-store' });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'โหลดข้อมูลออเดอร์จากฐานข้อมูลไม่สำเร็จ');
       }
+      const data = await response.json();
+      if (!Array.isArray(data.orders)) {
+        throw new Error('รูปแบบข้อมูลออเดอร์ไม่ถูกต้อง');
+      }
+      orders = data.orders.map(mapOrder);
     }
 
     const columns = {
-      new: { title: 'ออเดอร์ใหม่', icon: 'inbox', color: 'text-ink' },
+      queue: { title: 'ออเดอร์ใหม่', icon: 'format_list_numbered', color: 'text-primaryText' },
       cooking: { title: 'กำลังปรุง', icon: 'soup_kitchen', color: 'text-primaryText' },
-      qc: { title: 'พร้อมสำหรับ QC', icon: 'verified_user', color: 'text-warning' },
-      done: { title: 'เสิร์ฟแล้ว', icon: 'task_alt', color: 'text-success' }
+      qc: { title: 'พร้อมสำหรับ QC', icon: 'verified_user', color: 'text-warning' }
     };
 
     function renderBoard() {
       const board = document.getElementById('boardGrid');
       board.innerHTML = Object.entries(columns).map(([key, column]) => {
-        const list = orders.filter(order => order.status === key);
+        const list = (key === 'queue'
+          ? orders.filter(order => order.status === 'new')
+          : orders.filter(order => order.status === key))
+          .sort((a, b) => getOrderPriority(a).rank - getOrderPriority(b).rank || a.cookTimeMinutes - b.cookTimeMinutes);
         return `<div class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-stroke bg-surface">
           <div class="flex items-center justify-between border-b border-stroke bg-elevated px-4 py-3"><h3 class="flex items-center gap-2 font-mono text-sm font-bold ${column.color}"><span class="material-symbols-outlined text-base">${column.icon}</span>${column.title}</h3><span class="rounded-full bg-high px-2 py-1 font-mono text-xs">${list.length}</span></div>
-          <div class="scrollbar flex-1 space-y-3 overflow-y-auto p-3">${list.map(orderCard).join('')}</div>
+          <div class="scrollbar flex-1 space-y-3 overflow-y-auto p-3">${list.map((order, index) => orderCard(order, key === 'queue' ? index + 1 : null)).join('')}</div>
         </div>`;
       }).join('');
       document.getElementById('totalMetric').textContent = orders.length;
       document.getElementById('progressMetric').textContent = orders.filter(o => o.status === 'cooking').length;
       document.getElementById('qcMetric').textContent = orders.filter(o => o.status === 'qc').length;
-      document.getElementById('servedMetric').textContent = orders.filter(o => o.status === 'done').length;
+      document.getElementById('urgentMetric').textContent = orders.filter(o => getOrderPriority(o).late).length;
     }
 
     function escapeHtml(value = '') {
@@ -238,18 +241,29 @@
       }[character]));
     }
 
-    function orderCard(order) {
+    function getOrderPriority(order) {
+      if (order.status === 'done') return { rank: 4, label: 'เสร็จแล้ว', badge: 'border-success/40 bg-success/10 text-success', late: false };
+      if (order.status === 'qc') return { rank: 0, label: 'ทำก่อน · รอตรวจ QC', badge: 'border-warning/50 bg-warning/15 text-warning', late: false };
+      if (order.status === 'cooking' && order.cookTimeMinutes <= 8) return { rank: 1, label: 'ล่าช้า · เร่งด่วน', badge: 'border-danger/50 bg-danger/15 text-danger', late: true };
+      if (order.status === 'cooking') return { rank: 2, label: 'กำลังดำเนินการ', badge: 'border-primary/50 bg-primary/15 text-primaryText', late: false };
+      return { rank: 3, label: 'ออเดอร์ใหม่ · รอเข้าคิว', badge: 'border-success/50 bg-success/10 text-success', late: false };
+    }
+
+    function orderCard(order, queueNumber = null) {
       const isDone = order.status === 'done';
       const isQc = order.status === 'qc';
-      const bar = isDone ? 'bg-success' : isQc ? 'bg-warning' : order.sla.startsWith('0') ? 'bg-danger' : 'bg-primary';
+      const priority = getOrderPriority(order);
+      const bar = priority.late ? 'bg-danger' : isDone ? 'bg-success' : isQc ? 'bg-warning' : 'bg-primary';
       const items = order.items.map(item => `<p>${escapeHtml(item)}</p>`).join('');
       return `<article class="order-card rounded-lg border border-stroke bg-elevated p-4" data-order="${escapeHtml(order.table)}">
-        <div class="flex items-start justify-between gap-2"><b class="font-mono text-sm ${isDone ? 'text-success' : 'text-primaryText'}">${escapeHtml(order.table)}</b><span class="font-mono text-[10px] text-muted">${escapeHtml(order.age)}</span></div>
+        <div class="flex items-start justify-between gap-2"><div class="flex items-center gap-2">${queueNumber ? `<span class="grid h-7 w-7 shrink-0 place-items-center rounded-full ${priority.late ? 'bg-danger' : 'bg-primary'} font-mono text-xs font-bold text-white">${queueNumber}</span>` : ''}<b class="font-mono text-sm ${isDone ? 'text-success' : 'text-primaryText'}">${escapeHtml(order.table)}</b></div><span class="font-mono text-[10px] text-muted">${escapeHtml(order.age)}</span></div>
+        <div class="mt-3 inline-flex rounded-md border px-2 py-1 font-mono text-[10px] font-bold ${priority.badge}">${priority.late ? '⚠ ' : ''}${priority.label}</div>
         <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-stroke"><div class="h-full w-3/4 rounded-full ${bar}"></div></div>
         <div class="mt-2 flex justify-between font-mono text-[10px] ${isDone ? 'text-success' : isQc ? 'text-warning' : 'text-muted'}"><span>${isDone ? 'เสิร์ฟแล้ว' : isQc ? 'พร้อมตรวจ' : 'SLA'}</span><span>${escapeHtml(order.sla)}</span></div>
         <div class="mt-3 space-y-1 border-t border-stroke pt-3 text-sm">${items}</div>
         ${order.tag ? `<span class="mt-3 inline-block rounded border border-stroke bg-high px-2 py-1 font-mono text-[10px] text-muted">${escapeHtml(order.tag)}</span>` : ''}
         ${order.note ? `<div class="mt-3 rounded bg-warning px-2 py-2 text-xs font-bold text-black"><span class="material-symbols-outlined mr-1 align-middle text-sm">priority_high</span>${escapeHtml(order.note)}</div>` : ''}
+        ${order.status === 'new' ? `<button class="start-cooking-action mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:brightness-110" data-order-id="${escapeHtml(order.id)}"><span class="material-symbols-outlined text-base">soup_kitchen</span>อัปเดตเป็นกำลังปรุง</button>` : ''}
         ${isQc ? `<button class="qc-action mt-4 w-full rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white" data-table="${escapeHtml(order.id || order.table)}">AI QC Check</button>` : ''}
       </article>`;
     }
@@ -272,6 +286,32 @@
       if (nav) {
         navigate(nav.dataset.page);
         document.getElementById('mobileNav').classList.add('hidden');
+      }
+      const startCooking = event.target.closest('.start-cooking-action');
+      if (startCooking) {
+        const order = orders.find(item => item.id === startCooking.dataset.orderId);
+        if (order) {
+          startCooking.disabled = true;
+          startCooking.textContent = 'กำลังอัปเดต...';
+          fetch(`/api/orders/${encodeURIComponent(order.id)}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'cooking' })
+          })
+            .then(async response => {
+              if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.message || 'อัปเดตสถานะไม่สำเร็จ');
+              }
+              await loadOrders();
+              renderBoard();
+              showToast(`${order.id} อัปเดตเป็นกำลังปรุงแล้ว`);
+            })
+            .catch(error => {
+              renderBoard();
+              showToast(error.message, false);
+            });
+        }
       }
       const qc = event.target.closest('.qc-action');
       if (qc) {
@@ -322,32 +362,34 @@
         specialRequest: data.specialRequest.trim(),
         status: data.status
       };
-      orders.unshift({
-        id: newOrder.id,
-        customer: newOrder.customer,
-        menu: newOrder.menu,
-        table: `${newOrder.customer} - #${newOrder.id.slice(-3)}`,
-        age: 'เพิ่มล่าสุด',
-        sla: `${String(newOrder.cookTimeMinutes).padStart(2, '0')}:00`,
-        status: newOrder.status,
-        tag: `[${newOrder.category}]`,
-        items: [`1x ${newOrder.menu}`],
-        category: newOrder.category,
-        note: newOrder.specialRequest
-      });
-      renderBoard();
-      closeOrderModal();
-      showToast('เพิ่มออเดอร์ในรายการแล้ว');
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newOrder)
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.message || 'บันทึกออเดอร์ไม่สำเร็จ');
+        }
+        await loadOrders();
+        renderBoard();
+        closeOrderModal();
+        showToast('บันทึกออเดอร์ลงฐานข้อมูลแล้ว');
+      } catch (error) {
+        showToast(error.message, false);
+      }
     });
     document.getElementById('optimizerButton').addEventListener('click', event => { event.target.textContent = 'กำลังปรับคิวด้วย AI...'; setTimeout(() => { event.target.textContent = 'เรียกใช้ AI Queue Optimizer'; showToast('ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%'); }, 1000); });
     document.getElementById('returnButton').addEventListener('click', () => showToast('ส่งออเดอร์กลับไปยังสถานีผัดแล้ว', false));
     document.getElementById('exportButton').addEventListener('click', () => showToast('สร้างรายงานพร้อมดาวน์โหลดแล้ว'));
 
-    // Render board immediately with initial default mock data
+    // Show a loading state while fetching all orders from Supabase.
+    orders = [];
     renderBoard();
-
-    // Load latest orders from API / mock file if available
-    loadOrders().then(renderBoard).catch(() => {});
+    loadOrders()
+      .then(renderBoard)
+      .catch(error => showToast(error.message, false));
   </script>
 </body>
 </html>
