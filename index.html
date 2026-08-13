@@ -164,7 +164,7 @@
     let orders = [];
 
     async function loadOrders() {
-      const response = await fetch('data/mock-orders.json');
+      const response = await fetch('/api/orders').catch(() => fetch('data/mock-orders.json'));
       if (!response.ok) throw new Error('โหลดข้อมูลออเดอร์ไม่สำเร็จ');
       const data = await response.json();
       orders = data.orders.map(order => ({
@@ -236,8 +236,8 @@
       }
       const qc = event.target.closest('.qc-action');
       if (qc) {
-        navigate('qc');
-        showToast(`เปิดการตรวจสอบ ${qc.dataset.table}`);
+        const target = encodeURIComponent(qc.dataset.table || '');
+        window.location.href = `qc.html?order=${target}`;
       }
     });
 
@@ -263,18 +263,29 @@
       event.preventDefault();
       const data = Object.fromEntries(new FormData(orderForm));
       const cookTime = Number(data.cookTimeMinutes);
-      orders.unshift({
-        table: `${data.customer} - #${data.id.slice(-3)}`,
-        age: 'เมื่อสักครู่',
-        sla: `${String(cookTime).padStart(2, '0')}:00`,
-        status: data.status,
-        tag: `[${data.category}]`,
-        items: [`1x ${data.menu}`],
-        note: data.specialRequest
-      });
-      renderBoard();
-      closeOrderModal();
-      showToast('เพิ่มออเดอร์ใหม่แล้ว (ข้อมูลจะถูกบันทึกใน JSON เมื่อใช้เซิร์ฟเวอร์ API)');
+      const newOrder = {
+        id: data.id,
+        customer: data.customer,
+        menu: data.menu,
+        category: data.category,
+        cookTimeMinutes: cookTime,
+        specialRequest: data.specialRequest.trim(),
+        status: data.status
+      };
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newOrder)
+        });
+        if (!response.ok) throw new Error('บันทึกออเดอร์ไม่สำเร็จ');
+        await loadOrders();
+        renderBoard();
+        closeOrderModal();
+        showToast('เพิ่มออเดอร์และบันทึกลง mock-orders.json แล้ว');
+      } catch (error) {
+        showToast('ไม่สามารถบันทึก JSON ได้ กรุณาเปิดเว็บผ่าน server.js', false);
+      }
     });
     document.getElementById('optimizerButton').addEventListener('click', event => { event.target.textContent = 'กำลังปรับคิวด้วย AI...'; setTimeout(() => { event.target.textContent = 'เรียกใช้ AI Queue Optimizer'; showToast('ปรับคิวสำเร็จ ลดเวลารอประมาณ 28%'); }, 1000); });
     document.getElementById('returnButton').addEventListener('click', () => showToast('ส่งออเดอร์กลับไปยังสถานีผัดแล้ว', false));
