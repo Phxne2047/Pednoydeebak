@@ -21,6 +21,7 @@ export const orders = pgTable("orders", {
   cookTimeMinutes: integer("cook_time_minutes").notNull(),
   specialRequest: text("special_request"),
   status: varchar("status", { length: 32 }).notNull().default("new"),
+  cookingStartedAt: timestamp("cooking_started_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

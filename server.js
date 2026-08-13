@@ -61,6 +61,7 @@ function mapOrder(row) {
     cookTimeMinutes: row.cook_time_minutes,
     specialRequest: row.special_request || "",
     status: row.status,
+    cookingStartedAt: row.cooking_started_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -76,6 +77,7 @@ async function getOrders() {
       cook_time_minutes,
       special_request,
       status,
+      cooking_started_at,
       created_at,
       updated_at
     from orders
@@ -113,11 +115,24 @@ async function updateOrderStatus(id, status) {
     update orders
     set
       status = ${status},
+      cooking_started_at = case
+        when ${status} = 'cooking' then coalesce(cooking_started_at, now())
+        else cooking_started_at
+      end,
       updated_at = now()
     where id = ${id}
     returning *
   `;
   return rows[0] ? mapOrder(rows[0]) : null;
+}
+
+async function deleteOrder(id) {
+  const rows = await sql`
+    delete from orders
+    where id = ${id}
+    returning id
+  `;
+  return rows[0] || null;
 }
 
 const server = http.createServer(async (request, response) => {
@@ -148,6 +163,17 @@ const server = http.createServer(async (request, response) => {
         return;
       }
       sendJson(response, 200, updatedOrder);
+      return;
+    }
+
+    const orderMatch = requestUrl.pathname.match(/^\/api\/orders\/([^/]+)$/);
+    if (request.method === "DELETE" && orderMatch) {
+      const deletedOrder = await deleteOrder(decodeURIComponent(orderMatch[1]));
+      if (!deletedOrder) {
+        sendJson(response, 404, { message: "ไม่พบออเดอร์" });
+        return;
+      }
+      sendJson(response, 200, { id: deletedOrder.id });
       return;
     }
 
